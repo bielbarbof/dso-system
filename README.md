@@ -1,53 +1,29 @@
-# DSO System v0.1.0 — Owlbear Rodeo
+# DSO System v0.2.0
 
-Primeira fundação do port do sistema **Ordem Paranormal** para Owlbear Rodeo, usando como referência técnica o sistema Foundry `ordemparanormal` v7.3.3 fornecido pelo usuário.
+Sistema de fichas de **PROTAGONISTAS** de Ordem Paranormal para Owlbear Rodeo, com interface **Tech Noir DSO**.
 
-## O que já funciona
+## O que esta versão muda
 
-- Gerenciador de personagens com experiência visual **Tech Noir DSO**.
-- Mestre cria fichas e vê todas as fichas da sala.
-- Mestre atribui cada ficha a um jogador conectado.
-- Jogador vê somente as fichas que controla.
-- Ficha fullscreen inspirada na organização de CRIS, sem copiar sua interface.
-- Atributos AGI/FOR/INT/PRE/VIG.
-- PV, PE, SAN, Defesa, Esquiva, deslocamento e DT de Ritual.
-- Cálculos base de PV/PE/SAN por classe portados da lógica de `actor.mjs` do sistema Foundry fornecido.
-- Perícias com atributo, treinamento 0/5/10/15 e modificador manual.
-- Rolagem de perícia com pool d20 (`kh`; atributo 0 usa `2d20kl`).
-- Rolagens enviadas diretamente ao **DSO Chat** quando ele estiver habilitado na mesma sala.
-- Inventário, Habilidades e Rituais com registros manuais básicos.
-- Biografia e objetivos.
-- Backup/importação JSON do banco do Mestre.
-- Token do Owlbear pode ser vinculado a uma ficha: selecione um token CHARACTER e use o botão DSO no menu de contexto.
-- Ao selecionar depois um token já vinculado, o botão DSO abre a ficha.
+- Terminologia de ficha alterada para **PROTAGONISTA**.
+- Regra de **Determinação** habilitada como padrão: a ficha usa PV + PD e não cria barras separadas de PE/SAN.
+- **Nível de Experiência** e **NEX** são características independentes.
+- Progressão de PV/PD e demais derivados é recalculada automaticamente quando nível, classe, atributos, equipamento ou modificadores mudam.
+- Campos de **Ajustes Externos** continuam editáveis para bônus que vêm de efeitos fora da progressão normal.
+- Biblioteca visual no estilo CRIS para adicionar itens, habilidades e rituais sem digitação manual.
+- Catálogo embarcado com **520 registros estruturados** extraídos dos compêndios do Foundry fornecido: 269 habilidades/poderes/trilhas, 151 itens/equipamentos/armamentos/proteções e 100 rituais.
+- Filtros por classe, trilha, categoria, elemento e círculo, pesquisa e detalhes expansíveis.
+- Proteções equipadas entram automaticamente no cálculo de Defesa.
+- Um primeiro núcleo de efeitos passivos estruturados já recalcula recursos/perícias/Defesa/deslocamento para poderes como Calejado, Dedicação, Vitalidade Reforçada, Vontade Inabalável, Atlético, Reflexos Defensivos e outros bônus permanentes inequívocos.
+- Armamentos equipados aparecem automaticamente na aba Combate.
+- Integração com **DSO Chat v0.3.2**: atributos, treinamento e bônus `Outros` do protagonista alimentam a aba **+ TESTE**.
+- Token CHARACTER vinculado recebe barras de **PV e PD** anexadas ao token.
+- Menu de contexto do token abre a ficha ou o controle rápido de PV/PD.
+- Mestre continua sendo a autoridade das fichas e pode atribuir cada protagonista a jogadores conectados.
 
-## Armazenamento nesta versão
+## Estrutura da ficha
 
-Owlbear limita o **Room Metadata a 16 kB**. Por isso esta versão não tenta colocar fichas completas dentro desse espaço. O DSO System usa:
+`GERAL · PERÍCIAS · COMBATE · INVENTÁRIO · HABILIDADES · RITUAIS · BIOGRAFIA`
 
-- **Room Metadata:** catálogo leve de personagens, permissões, controlador e resumo de recursos.
-- **localStorage do navegador do Mestre:** corpo completo das fichas.
-- **Broadcast do Owlbear:** jogadores autorizados pedem a ficha ao Mestre e devolvem alterações.
-- **cache local do jogador:** último snapshot recebido, para abertura rápida.
+A biblioteca não substitui a possibilidade de ajustes externos: a progressão é automática, mas o Mestre continua podendo somar modificadores em PV máximo, PD máximo, Defesa, deslocamento e DT de ritual.
 
-Isso é proposital para a v0.1.0 e evita ultrapassar o limite do Owlbear. Para a linha estável futura, o projeto está preparado para migrar o corpo completo das fichas para persistência externa opcional (ex.: Supabase), mantendo Owlbear como autoridade de sala e permissões.
-
-**Importante:** na v0.1.0, exporte backups JSON regularmente. Trocar de navegador/computador no perfil do Mestre não leva o `localStorage` junto.
-
-## Estrutura
-
-- `manifest.json` — instalação da extensão.
-- `index.html`, `app.js`, `styles.css` — painel principal.
-- `sheet.html`, `sheet.js`, `sheet.css` — ficha fullscreen.
-- `background.html`, `background.js` — autoridade/sincronização e menu de contexto.
-- `link.html`, `link.js`, `link.css` — vínculo token ↔ ficha.
-- `core.js` — modelo de dados, cálculos e rolagens.
-- `PORTABILITY_AUDIT.md` — auditoria inicial do port Foundry → Owlbear.
-
-## Instalação rápida
-
-Hospede os arquivos como site estático e instale no Owlbear usando:
-
-`https://SEU-DOMINIO/manifest.json`
-
-Veja o tutorial completo em `INSTALL.md`.
+Consulte `COMPENDIUM_REPORT.md` para os números do port e `INSTALL.md` para instalação/atualização.

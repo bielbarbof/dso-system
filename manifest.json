@@ -1,8 +1,8 @@
 {
   "name": "DSO System",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "manifest_version": 1,
-  "description": "Fichas, permissões e automações de Ordem Paranormal para Owlbear Rodeo em interface Tech Noir DSO.",
+  "description": "Protagonistas, fichas, compêndios e automações de Ordem Paranormal no Owlbear Rodeo em interface Tech Noir DSO.",
   "author": "DSO / Desordenados",
   "icon": "/icon.svg",
   "action": {

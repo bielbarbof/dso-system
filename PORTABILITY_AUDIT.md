@@ -1,103 +1,53 @@
-# DSO System — Auditoria inicial Foundry → Owlbear
+# DSO System — Auditoria de Portabilidade v0.2
 
-## Fonte analisada
+## Situação atual
 
-Sistema Foundry incluído no pacote fornecido pelo usuário:
+O sistema Foundry fornecido foi usado como referência estrutural para o port. A v0.2.0 já deixa de ser apenas uma prova de conceito de ficha: ela possui modelo próprio de **PROTAGONISTA**, biblioteca de compêndios e integração com tokens/DSO Chat.
 
-- ID: `ordemparanormal`
-- Versão: **7.3.3**
-- Foundry: v13
-- Tipos de Actor: `agent`, `threat`
-- Tipos declarados de Item: `armament`, `generalEquipment`, `protection`, `ability`, `ritual`
+## Regras de campanha fixadas nesta linha
 
-## Estrutura encontrada
+1. **Determinação:** PV + PD; PE/SAN separados não são recursos da ficha desta campanha.
+2. **Nível de Experiência separado de NEX:** Nível representa a progressão prática; NEX representa exposição paranormal.
+3. **Tech Noir DSO:** o port não tenta reproduzir a interface do Foundry. O CRIS é referência de organização e fluxo de seleção; a linguagem visual é DSO.
+4. **Automático, mas editável:** valores derivados possuem cálculo base e modificadores externos explícitos. O usuário não precisa recalcular a ficha ao subir de nível, mas efeitos excepcionais continuam podendo alterar o total.
 
-O `template.json` fornece um modelo muito útil para o port. O ator `agent` inclui PV, SAN, PE, PD, NEX, estágio, nível, Defesa, deslocamento, classe, origem, trilha, patente, atributos, perícias, recursos, biografia e objetivos.
+## Modelo portado
 
-Atributos do Foundry:
+- Identidade e controle por jogador.
+- Classe, origem, trilha, nível, NEX e patente.
+- AGI, FOR, INT, PRE e VIG.
+- PV, PD, Defesa, Esquiva, deslocamento, limite de PD e DT de ritual.
+- Matriz completa de perícias.
+- Inventário estruturado.
+- Habilidades/poderes estruturados.
+- Rituais estruturados.
+- Biografia, objetivos e anotações.
+- Vínculo protagonista ↔ token.
 
-- `dex` → Agilidade
-- `str` → Força
-- `int` → Intelecto/Inteligência
-- `pre` → Presença
-- `vit` → Vigor
+## Compêndios
 
-O sistema possui 28 entradas de perícia, incluindo Perícia Livre.
+A v0.2.0 embarca 520 registros estruturados originados dos packs disponíveis no Foundry fornecido. Consulte `COMPENDIUM_REPORT.md`.
 
-## Regras já portadas na v0.1.0
+## Automação
 
-Do `module/documents/actor.mjs`:
+A regra adotada é não interpretar texto livre de um poder como se fosse uma fórmula universal. Dados estruturados entram automaticamente no cálculo quando possuem significado mecânico inequívoco. Exemplos atuais:
 
-- progressão por NEX: `floor(NEX / 5)`, com NEX 99+ tratado como progresso 20;
-- cálculo de PV, PE e SAN por classe;
-- cálculo de PE por rodada;
-- Defesa base + Agilidade;
-- Esquiva = Defesa + grau de Reflexos + modificador;
-- treinamento 0 / 5 / 10 / 15;
-- DT de Ritual = 10 + progresso + Presença (não Sobrevivente);
-- pool de d20 por atributo e `2d20kl` quando atributo é 0.
+- progressão de PV/PD pela classe, nível e atributos;
+- Defesa por Agilidade e proteções equipadas;
+- Esquiva por Defesa e Reflexos;
+- armamentos equipados no resumo de combate;
+- DT de ritual e limite de PD;
+- barras de PV/PD no token;
+- atributos/perícias enviados ao DSO Chat.
 
-## Compêndios encontrados
+A arquitetura permite adicionar regras explícitas para poderes especiais sem transformar descrições narrativas em automações incorretas.
 
-Contagem aproximada de documentos de conteúdo no `_source` do sistema fornecido:
+## Próximos núcleos de port
 
-- Armamentos: 45
-- Equipamentos gerais: 103
-- Proteções: 3
-- Poderes gerais: 38
-- Poderes de Combatente: 29
-- Poderes de Especialista: 26
-- Poderes de Ocultista: 29
-- Poderes de Sobrevivente: 8
-- Poderes de Origem: 26
-- Trilhas de Combatente: 44
-- Trilhas de Especialista: 32
-- Trilhas de Ocultista: 37
-
-Esses conteúdos **não foram todos incorporados na v0.1.0**. A primeira versão estabelece a arquitetura que permitirá importar bibliotecas progressivamente sem reescrever a ficha.
-
-## Mapa de portabilidade
-
-### Alta portabilidade
-
-- modelo de personagem;
-- atributos e perícias;
-- recursos;
-- cálculos derivados;
-- rolagens d20;
-- armas e dano;
-- inventário;
-- poderes;
-- rituais;
-- ameaças;
-- iniciativa.
-
-### Requer adaptação
-
-- Active Effects do Foundry → motor próprio de efeitos DSO;
-- Actors/Items embutidos → objetos JSON do DSO System;
-- ChatMessage → integração DSO Chat;
-- Combat/Initiative do Foundry → tracker próprio + tokens Owlbear;
-- ownership Foundry → `Player.id` + catálogo/permissões DSO;
-- Tokens Foundry → metadata dos itens CHARACTER do Owlbear.
-
-### Não deve ser portado literalmente
-
-- ApplicationV2 e Sheet classes;
-- Hooks específicos do Foundry;
-- Handlebars da interface Foundry;
-- APIs de Compendium/Actor/Item do Foundry;
-- módulos externos exigidos pelo sistema.
-
-O objetivo é portar **comportamento e estrutura**, e não transportar dependências internas do Foundry.
-
-## Roadmap proposto
-
-1. **v0.1.x — Core:** personagens, permissões, ficha, recursos, perícias, backup e token link.
-2. **v0.2.x — Arsenal:** armas, equipamentos, proteções, carga e ataques.
-3. **v0.3.x — Habilidades:** origens, classes, trilhas, poderes, custo de PE.
-4. **v0.4.x — Ritualística:** círculos, DT, custo, formas discente/verdadeira e componentes.
-5. **v0.5.x — Combate:** iniciativa, condições, efeitos, dano e integração de tokens.
-6. **v0.6.x — Ameaças:** ficha de threat, resistências, vulnerabilidades, presença perturbadora e ações.
-7. **v0.7.x — Criação assistida:** fluxo CRIS-like completo usando bibliotecas portadas.
-8. **v1.0 — DSO System estável:** sistema completo, persistência robusta e migrações.
+- motor de ataque/dano/munição/recarga;
+- custos e ações de habilidades/rituais usando PD;
+- requisitos e progressão assistida de classe/trilha;
+- efeitos e condições;
+- ameaça/NPC do Mestre;
+- iniciativa e automações de combate;
+- biblioteca adicional para conteúdos que não existam como documentos estruturados nos packs fornecidos.

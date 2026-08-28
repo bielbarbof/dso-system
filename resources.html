@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>DSO System — Recursos</title>
+  <link rel="stylesheet" href="./resources.css">
+</head>
+<body>
+  <main class="resource-shell">
+    <header>
+      <div class="mark">DSO</div>
+      <div class="head-copy">
+        <span>PROTOCOLO // RECURSOS</span>
+        <strong id="name">PROTAGONISTA</strong>
+      </div>
+      <button id="close" class="icon-btn" aria-label="Fechar">×</button>
+    </header>
+
+    <section class="resource" data-kind="PV">
+      <div class="resource-top"><span>PV</span><b><output id="pv-current">0</output> / <output id="pv-max">0</output></b></div>
+      <div class="bar"><i id="pv-fill"></i></div>
+      <div class="stepper">
+        <button data-step="PV:-5">−5</button><button data-step="PV:-1">−1</button>
+        <input id="pv-input" type="number" min="0" step="1" inputmode="numeric">
+        <button data-step="PV:1">+1</button><button data-step="PV:5">+5</button>
+      </div>
+    </section>
+
+    <section class="resource pd" data-kind="PD">
+      <div class="resource-top"><span>PD</span><b><output id="pd-current">0</output> / <output id="pd-max">0</output></b></div>
+      <div class="bar"><i id="pd-fill"></i></div>
+      <div class="stepper">
+        <button data-step="PD:-5">−5</button><button data-step="PD:-1">−1</button>
+        <input id="pd-input" type="number" min="0" step="1" inputmode="numeric">
+        <button data-step="PD:1">+1</button><button data-step="PD:5">+5</button>
+      </div>
+    </section>
+
+    <footer><span id="status">SINCRONIZADO COM A FICHA</span><button id="save" class="save">APLICAR</button></footer>
+    <div id="loading">CARREGANDO RECURSOS…</div>
+  </main>
+  <script type="module" src="./resources.js"></script>
+</body>
+</html>
