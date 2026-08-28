@@ -1,0 +1,10 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#090a0c"><title>DSO System</title><link rel="stylesheet" href="./styles.css"></head><body>
+<main class="shell">
+<header class="topbar"><div class="brand"><div class="brand-icon"><img src="./icon.svg"></div><div><strong>DSO SYSTEM</strong><button id="identity" class="identity">Conectando…</button></div></div><button id="menuBtn" class="square-btn" aria-label="Menu">☰</button></header>
+<section class="dashboard-head"><div><span class="eyebrow">GESTÃO DE AGENTES</span><h1 id="heading">PERSONAGENS</h1><p id="subheading">Carregando permissões da sala…</p></div><button id="newAgent" class="primary-btn hidden">+ NOVO AGENTE</button></section>
+<section id="stats" class="stat-grid"></section>
+<section id="agentList" class="agent-list"></section>
+<div id="empty" class="empty hidden"><div class="empty-mark">◇</div><strong>NENHUM AGENTE DISPONÍVEL</strong><span id="emptyText">O Mestre ainda não atribuiu uma ficha a você.</span></div>
+<div id="menu" class="menu hidden"><button id="exportBtn">Exportar backup JSON</button><label class="menu-upload">Importar backup JSON<input id="importInput" type="file" accept="application/json"></label><button id="refreshBtn">Sincronizar agora</button><div class="menu-rule"></div><span>DSO System v0.1.0</span></div>
+<div id="loading" class="loading">INICIALIZANDO PROTOCOLO…</div>
+</main><script type="module" src="./app.js"></script></body></html>
