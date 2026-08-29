@@ -182,7 +182,7 @@ $("#agentList").addEventListener("click", e => {
 $("#agentList").addEventListener("change", e => { const el = e.target.closest("[data-controller]"); if (el) void assignController(el.dataset.controller, el.value); });
 $("#exportBtn").addEventListener("click", () => {
   if (state.role !== "GM") return alert("Apenas o Mestre exporta o banco da sala.");
-  download(`dso-system-${state.roomId}-v0.5.0.json`, { version: 5, source: "owlbear-room-metadata", exportedAt: Date.now(), characters: state.store });
+  download(`dso-system-${state.roomId}-v0.5.1.json`, { version: 5, source: "owlbear-room-metadata", exportedAt: Date.now(), characters: state.store });
 });
 $("#importInput").addEventListener("change", async e => {
   if (state.role !== "GM") return;

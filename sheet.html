@@ -22,9 +22,9 @@
       <section class="core-section identity-section">
         <div class="section-kicker">IDENTIFICAÇÃO // PROTAGONISTA</div>
         <label class="field full"><span>NOME</span><input id="name" autocomplete="off"></label>
-        <div class="identity-pair"><label class="field"><span>JOGADOR</span><output id="controllerName">MESTRE</output></label><label class="field"><span>CLASSE</span><select id="class"></select></label></div>
-        <div class="identity-pair"><label class="field"><span>ORIGEM</span><select id="origin"></select></label><label class="field"><span>TRILHA</span><select id="trail"></select></label></div>
-        <div id="originNotice" class="origin-notice hidden"></div>
+        <div class="identity-pair"><label class="field"><span>JOGADOR</span><output id="controllerName">MESTRE</output></label><div class="field"><span>CLASSE</span><div class="dso-select" data-select-for="class"><button type="button" class="dso-select-trigger" aria-haspopup="listbox" aria-expanded="false"><b>Sem classe</b><i>⌄</i></button><div class="dso-select-menu" role="listbox"></div></div><select id="class" class="native-select-proxy" tabindex="-1" aria-hidden="true"></select></div></div>
+        <div class="identity-pair"><div class="field"><span>ORIGEM</span><div class="dso-select" data-select-for="origin"><button type="button" class="dso-select-trigger" aria-haspopup="listbox" aria-expanded="false"><b>Sem origem</b><i>⌄</i></button><div class="dso-select-menu" role="listbox"></div></div><select id="origin" class="native-select-proxy" tabindex="-1" aria-hidden="true"></select></div><div class="field"><span>TRILHA</span><div class="dso-select" data-select-for="trail"><button type="button" class="dso-select-trigger" aria-haspopup="listbox" aria-expanded="false"><b>Sem trilha</b><i>⌄</i></button><div class="dso-select-menu" role="listbox"></div></div><select id="trail" class="native-select-proxy" tabindex="-1" aria-hidden="true"></select></div></div>
+        <div id="originNotice" class="origin-notice hidden" aria-hidden="true"></div>
       </section>
 
       <section class="core-section attribute-section">
@@ -35,7 +35,7 @@
       <section class="core-section progression-section">
         <div class="progression-grid">
           <label class="progress-cell"><span>NÍVEL</span><input id="level" type="number" min="1" max="20"></label>
-          <div class="progress-cell nex-cell"><span>NEX</span><strong id="nexEffective">0%</strong><label>BASE <input id="nexBase" type="number" min="0" max="100">%</label><small id="nexBonus"></small></div>
+          <div class="progress-cell nex-cell"><span>NEX</span><strong id="nexEffective">0%</strong><div class="nex-breakdown"><label>BASE <input id="nexBase" type="number" min="0" max="100">%</label><small id="nexBonus"></small></div></div>
           <div class="progress-cell"><span>PD / TURNO</span><strong id="pdRound">1</strong></div>
           <div class="progress-cell"><span>DESLOC.</span><strong id="movement">9m</strong></div>
         </div>

@@ -1,4 +1,4 @@
-# Relatório do Arquivo DSO — v0.5.0
+# Relatório do Arquivo DSO — v0.5.1
 
 O catálogo embarcado mantém a base estruturada extraída dos compêndios Foundry fornecidos para o projeto e as adições já consolidadas na linha v0.3/v0.4.
 

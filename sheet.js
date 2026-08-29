@@ -34,12 +34,22 @@ const RITUAL_LABELS = {
 };
 const GROUP_SHORT = { "Trilhas — Combatente": "Trilhas Combatente", "Trilhas — Especialista": "Trilhas Especialista", "Trilhas — Ocultista": "Trilhas Ocultista" };
 const DAMAGE_TYPES = ["Corte", "Perfuração", "Balístico", "Impacto", "Fogo", "Frio", "Eletricidade", "Ácido", "Mental", "Sangue", "Morte", "Energia", "Conhecimento", "Medo"];
+const DAMAGE_TYPE_VALUES = [["cuttingDamage","Corte"],["piercingDamage","Perfuração"],["ballisticDamage","Balístico"],["impactDamage","Impacto"],["fireDamage","Fogo"],["coldDamage","Frio"],["electricityDamage","Eletricidade"],["acidDamage","Ácido"],["mentalDamage","Mental"],["bloodDamage","Sangue"],["deathDamage","Morte"],["energyDamage","Energia"],["knowledgeDamage","Conhecimento"],["fearDamage","Medo"]];
+const PROFICIENCY_LABELS = { tacticalWeapons:"Armas Táticas", simpleWeapons:"Armas Simples", heavyWeapons:"Armas Pesadas" };
+const GRIP_LABELS = { twoHands:"Duas Mãos", oneHand:"Uma Mão", light:"Leve" };
+const RANGE_TYPE_LABELS = { melee:"Corpo a Corpo", ranged:"À Distância" };
+const ITEM_TYPE_LABELS = { armament:"Armamento", protection:"Proteção", generalEquipment:"Equipamento" };
+const FIELD_VALUE_LABELS = { ...PROFICIENCY_LABELS, ...GRIP_LABELS, ...RANGE_TYPE_LABELS, ...ITEM_TYPE_LABELS };
+
 
 function opt(obj, current) { return Object.entries(obj).map(([k, v]) => `<option value="${escapeHtml(k)}" ${k === current ? "selected" : ""}>${escapeHtml(v)}</option>`).join(""); }
 function ritualLabel(field, value) { const raw = String(value || ""); return RITUAL_LABELS[field]?.[raw] || raw; }
 function pct(v, m) { return m > 0 ? Math.max(0, Math.min(100, (Number(v) || 0) / (Number(m) || 1) * 100)) : 0; }
 function setDirty(v = true) { state.dirty = v; $("#saveState").textContent = v ? "ALTERAÇÕES PENDENTES" : "SINCRONIZADO"; }
-function toast(text) { const e = $("#toast"); e.textContent = text; e.classList.remove("hidden"); clearTimeout(e._timer); e._timer = setTimeout(() => e.classList.add("hidden"), 2200); }
+function toast(text, { title = "DSO SYSTEM // ATUALIZAÇÃO", tone = "info", duration = 2800 } = {}) {
+  const e = $("#toast"); e.className = `toast ${tone}`; e.innerHTML = `<strong>${escapeHtml(title)}</strong><span>${escapeHtml(String(text || ""))}</span>`; e.classList.remove("hidden");
+  clearTimeout(e._timer); e._timer = setTimeout(() => e.classList.add("hidden"), duration);
+}
 function deepCopy(v) { return typeof structuredClone === "function" ? structuredClone(v) : JSON.parse(JSON.stringify(v)); }
 function romanCategory(value) { const n = Math.max(0, Number(value) || 0); return n === 0 ? "0" : (["", "I", "II", "III", "IV", "V", "VI"][n] || String(n)); }
 function damageTypeLabel(v = "") { return ({ cuttingDamage: "Corte", piercingDamage: "Perfuração", ballisticDamage: "Balístico", impactDamage: "Impacto", fireDamage: "Fogo", coldDamage: "Frio", electricityDamage: "Eletricidade", acidDamage: "Ácido", mentalDamage: "Mental", bloodDamage: "Sangue", deathDamage: "Morte", energyDamage: "Energia", knowledgeDamage: "Conhecimento", fearDamage: "Medo" })[v] || String(v || "").replace(/Damage$/i, "") || "Dano"; }
@@ -48,6 +58,21 @@ function steppedRange(value = "", steps = 0) { const order = ["Curto", "Médio",
 function numericBonus(v) { const n = Number(String(v ?? "").trim()); return Number.isFinite(n) ? n : 0; }
 function imageOrMark(item, mark = "◇") { return item?.image ? `<img src="${escapeHtml(item.image)}" alt="" onerror="this.remove()">` : mark; }
 function elementTag(raw) { const name = ELEMENTS[raw] || raw; return name ? `<span class="element-tag ${ELEMENT_CLASS[raw] || ""}">${escapeHtml(String(name).toUpperCase())}</span>` : ""; }
+function friendlyValue(value = "") { return FIELD_VALUE_LABELS[value] || damageTypeLabel(value) || String(value || ""); }
+function editorText(value = "") {
+  const doc = new DOMParser().parseFromString(String(value || ""), "text/html");
+  doc.querySelectorAll("br").forEach(br => br.replaceWith("\n"));
+  doc.querySelectorAll("p,li,div,h1,h2,h3,h4,blockquote").forEach(el => { el.insertAdjacentText("beforeend", "\n"); });
+  return String(doc.body.textContent || "").replace(/\u00a0/g," ").replace(/[ \t]+\n/g,"\n").replace(/\n{3,}/g,"\n\n").trim();
+}
+function syncDsoSelect(id) {
+  const select = $("#" + id), wrap = document.querySelector(`.dso-select[data-select-for="${id}"]`); if (!select || !wrap) return;
+  const trigger = wrap.querySelector(".dso-select-trigger"), menu = wrap.querySelector(".dso-select-menu"), selected = select.options[select.selectedIndex];
+  trigger.querySelector("b").textContent = selected?.textContent || "—"; trigger.disabled = select.disabled;
+  menu.innerHTML = [...select.options].map(o => `<button type="button" role="option" data-dso-option="${escapeHtml(o.value)}" class="${o.selected ? "selected" : ""}">${escapeHtml(o.textContent)}</button>`).join("");
+}
+function syncIdentitySelects() { ["class","origin","trail"].forEach(syncDsoSelect); }
+function closeDsoSelects(except = null) { document.querySelectorAll(".dso-select.open").forEach(x => { if (x !== except) { x.classList.remove("open"); x.querySelector(".dso-select-trigger")?.setAttribute("aria-expanded","false"); } }); }
 
 function adaptCampaignText(value = "", item = null, kind = "") {
   let text = String(value || "")
@@ -65,7 +90,9 @@ function displayItemName(item, kind = "") {
   return name;
 }
 function sanitizeHtml(html = "", item = null, kind = "") {
-  const doc = new DOMParser().parseFromString(`<div>${adaptCampaignText(html, item, kind)}</div>`, "text/html"), root = doc.body.firstElementChild;
+  const adapted = adaptCampaignText(html, item, kind);
+  if (!/<[a-z][\s\S]*>/i.test(adapted)) return escapeHtml(adapted).replace(/\n/g, "<br>");
+  const doc = new DOMParser().parseFromString(`<div>${adapted}</div>`, "text/html"), root = doc.body.firstElementChild;
   const allowed = new Set(["P", "BR", "STRONG", "B", "EM", "I", "UL", "OL", "LI", "H3", "H4", "BLOCKQUOTE", "SPAN"]);
   const walk = node => { for (const child of [...node.children]) { if (!allowed.has(child.tagName)) { child.replaceWith(...child.childNodes); continue; } for (const a of [...child.attributes]) child.removeAttribute(a.name); walk(child); } };
   walk(root); return root.innerHTML;
@@ -139,13 +166,7 @@ function renderDerived() {
 }
 
 function originRule(name) { return state.compendium?.originRules?.[name] || null; }
-function renderOriginNotice() {
-  const box = $("#originNotice"), name = state.char?.system?.origin, rule = originRule(name);
-  if (!name || !rule) { box.classList.add("hidden"); box.innerHTML = ""; return; }
-  const skillNames = (rule.skills || []).map(k => SKILLS.find(x => x.key === k)?.label || k);
-  box.classList.remove("hidden");
-  box.innerHTML = `<strong>${escapeHtml(name.toUpperCase())}</strong> <span>aplica automaticamente ${skillNames.length ? `treino em ${escapeHtml(skillNames.join(" e "))} e ` : ""}o poder ${escapeHtml(rule.power || "de origem")}.${name === "Amnésico" ? " As duas perícias do Amnésico continuam à escolha do Mestre." : ""}</span>`;
-}
+function renderOriginNotice() { const box = $("#originNotice"); if (box) { box.classList.add("hidden"); box.innerHTML = ""; } }
 function applyOriginSelection(nextOrigin, { silent = false } = {}) {
   const c = state.char, s = c.system, previous = s.originState?.appliedOrigin || s.origin || "";
   s.originState = s.originState || { appliedOrigin: "" };
@@ -160,7 +181,13 @@ function applyOriginSelection(nextOrigin, { silent = false } = {}) {
     if (src && !s.abilities.some(a => a.catalogId === src.id)) { const copy = deepCopy(src); copy.id = uid(); copy.catalogId = src.id; copy.autoSource = `origin:${nextOrigin}`; copy.equipped = false; copy.quantity = 1; copy.modifications = []; copy.curses = []; s.abilities.push(copy); }
   }
   s.originState.appliedOrigin = nextOrigin; deriveCharacter(c); renderSkills(); renderCollections(); renderDerived(); renderOriginNotice(); setDirty();
-  if (!silent && nextOrigin) toast("ORIGEM APLICADA AUTOMATICAMENTE");
+  if (!silent && nextOrigin) {
+    const skills = (rule?.skills || []).map(k => SKILLS.find(x => x.key === k)?.label || k), details = [];
+    if (skills.length) details.push(`${skills.join(" + ")} treinada${skills.length > 1 ? "s" : ""}`);
+    if (rule?.power) details.push(`${rule.power} adicionado`);
+    if (nextOrigin === "Amnésico") details.push("perícias à escolha do Mestre");
+    toast(details.join(" // ") || "Benefícios aplicados automaticamente.", { title: `ORIGEM APLICADA // ${nextOrigin.toUpperCase()}`, duration: 4300 });
+  }
 }
 
 function controllerName() {
@@ -176,6 +203,7 @@ function render() {
   $("#class").innerHTML = `<option value="">Sem classe</option>${opt(CLASSES, s.class)}`;
   $("#origin").innerHTML = `<option value="">Sem origem</option>${(state.compendium?.origins || []).map(x => `<option value="${escapeHtml(x)}" ${x === s.origin ? "selected" : ""}>${escapeHtml(x)}</option>`).join("")}`;
   $("#trail").innerHTML = `<option value="">Sem trilha</option>${(state.compendium?.trails || []).map(x => `<option value="${escapeHtml(x)}" ${x === s.trilha ? "selected" : ""}>${escapeHtml(x)}</option>`).join("")}`;
+  syncIdentitySelects();
   $("#level").value = s.nivel.value; $("#prestige").value = s.patent.prestigePoints;
   $("#pvBonus").value = s.PV.manualMax; $("#pdBonus").value = s.PD.manualMax; $("#defBonus").value = s.defense.manual; $("#movementBonus").value = s.desloc.manual; $("#ritualDtBonus").value = s.ritual.manualDT;
   $("#storageState").textContent = storageLabel();
@@ -187,7 +215,7 @@ function setEditable() {
   document.querySelectorAll("input,select,textarea,[data-open-library],[data-remove-selected],[data-edit-selected],[data-edit-weapon],[data-equipped],[data-quantity]").forEach(el => { el.disabled = !state.canEdit; });
   // Rolagens continuam disponíveis em modo de consulta; elas não alteram a ficha.
   document.querySelectorAll("[data-roll],[data-weapon-attack],[data-ritual-roll],#diceRoll").forEach(el => el.disabled = false);
-  $("#saveBtn").disabled = !state.canEdit;
+  $("#saveBtn").disabled = !state.canEdit; syncIdentitySelects();
 }
 function readCore({ renderAfter = true } = {}) {
   if (!state.char) return null;
@@ -367,7 +395,7 @@ async function attackWithWeapon(index) {
 async function damageWithWeapon(index) {
   if (!state.char) return; readCore({ renderAfter: false }); const w = state.char.system.inventory[index]; if (!w || w.type !== "armament") return;
   const d = itemDerived(w), last = state.lastAttack[w.id], crit = criticalProfile(w), critical = Boolean(last?.critical), base = addBaseDice(w.damage?.formula || "0", d.extraBaseDie || 0, critical ? crit.mult : 1), attrBonus = w.damage?.attr ? effectiveAttribute(state.char, w.damage.attr) : 0, flat = attrBonus + numericBonus(w.damage?.bonus) + (Number(d.damageFlat) || 0), extras = (d.extraDamage || []).filter(x => x?.formula), formula = [base, ...extras.map(x => x.formula), flat ? String(flat) : ""].filter(Boolean).join(" + "), rolled = parseDiceExpression(formula);
-  const types = [damageTypeLabel(w.damage?.type), ...extras.map(x => x.type).filter(Boolean)].join(" + ");
+  const types = [damageTypeLabel(w.damage?.type), ...extras.map(x => damageTypeLabel(x.type)).filter(Boolean)].join(" + ");
   const entry = rollEntryBase(`Dano — ${w.name}${critical ? " // CRÍTICO" : ""}`, `${types || "Dano"}${critical ? ` · x${crit.mult}` : ""}`, formula, rolled.total, rolled.terms.filter(x => x.sides).map(x => ({ count: x.count, sides: x.sides, rolls: x.rolls, subtotal: x.subtotal })), 0, flat);
   await sendRollEntry(entry, { critical });
 }
@@ -446,8 +474,8 @@ function enhancementAllowed(item, opt, kind) {
   }
   return "";
 }
-function openEnhancement(index) { const item = findInventory(index); if (!item) return; state.enhancement = { index: Number(index), tab: "mods" }; $("#enhancementModal").classList.remove("hidden"); $("#enhancementModal").setAttribute("aria-hidden", "false"); renderEnhancement(); }
-function closeEnhancement() { $("#enhancementModal").classList.add("hidden"); $("#enhancementModal").setAttribute("aria-hidden", "true"); }
+function openEnhancement(index) { const item = findInventory(index); if (!item) return; state.enhancement = { index: Number(index), tab: "mods" }; const modal = $("#enhancementModal"); modal.classList.remove("hidden"); modal.setAttribute("aria-hidden", "false"); document.body.classList.add("nested-modal-open"); renderEnhancement(); setTimeout(() => $("#enhancementClose")?.focus(), 0); }
+function closeEnhancement() { $("#enhancementModal").classList.add("hidden"); $("#enhancementModal").setAttribute("aria-hidden", "true"); document.body.classList.remove("nested-modal-open"); if (!$("#editorModal").classList.contains("hidden")) setTimeout(() => $("#editorEnhancements")?.focus(), 0); }
 function renderEnhancement() {
   const item = findInventory(state.enhancement.index); if (!item) { closeEnhancement(); return; }
   const tab = state.enhancement.tab, defs = tab === "mods" ? modificationsFor(item) : cursesFor(item), selected = tab === "mods" ? (item.modifications || []) : (item.curses || []), d = itemDerived(item);
@@ -463,37 +491,50 @@ function toggleEnhancement(id) {
 }
 
 // ---------- editor local / overrides ----------
-function editorField(label, name, value = "", { type = "text", span = 1, options = null, min = null, max = null, placeholder = "" } = {}) {
-  const cls = span === 4 ? "span-4" : span === 2 ? "span-2" : "";
-  if (type === "textarea") return `<label class="editor-field ${cls}"><span>${label}</span><textarea name="${name}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(value)}</textarea></label>`;
-  if (options) return `<label class="editor-field ${cls}"><span>${label}</span><select name="${name}">${options.map(([v, l]) => `<option value="${escapeHtml(v)}" ${String(v) === String(value) ? "selected" : ""}>${escapeHtml(l)}</option>`).join("")}</select></label>`;
-  return `<label class="editor-field ${cls}"><span>${label}</span><input name="${name}" type="${type}" value="${escapeHtml(value)}" ${min !== null ? `min="${min}"` : ""} ${max !== null ? `max="${max}"` : ""} placeholder="${escapeHtml(placeholder)}"></label>`;
+function editorField(label, name, value = "", { type = "text", span = 1, options = null, min = null, max = null, placeholder = "", cleanText = false } = {}) {
+  const cls = span === 4 ? "span-4" : span === 2 ? "span-2" : "", safeValue = cleanText ? editorText(value) : value;
+  if (type === "textarea") return `<label class="editor-field ${cls}"><span>${label}</span><textarea name="${name}" placeholder="${escapeHtml(placeholder)}">${escapeHtml(safeValue)}</textarea></label>`;
+  if (options) return `<label class="editor-field ${cls}"><span>${label}</span><select name="${name}">${options.map(([v, l, selected]) => `<option value="${escapeHtml(v)}" ${(selected || String(v) === String(value)) ? "selected" : ""}>${escapeHtml(l)}</option>`).join("")}</select></label>`;
+  return `<label class="editor-field ${cls}"><span>${label}</span><input name="${name}" type="${type}" value="${escapeHtml(safeValue)}" ${min !== null ? `min="${min}"` : ""} ${max !== null ? `max="${max}"` : ""} placeholder="${escapeHtml(placeholder)}"></label>`;
 }
-function damageTypeOptions(current) { const currentLabel = damageTypeLabel(current); return [[current, currentLabel], ...DAMAGE_TYPES.filter(x => x !== currentLabel).map(x => [x, x])]; }
+function editorSection(kicker, title, body, cls = "") { return `<section class="editor-section ${cls}"><header><span>${escapeHtml(kicker)}</span><strong>${escapeHtml(title)}</strong></header><div class="editor-section-grid">${body}</div></section>`; }
+function damageTypeOptions(current) {
+  const label = damageTypeLabel(current), known = DAMAGE_TYPE_VALUES.some(([v,l]) => v === current || l === current || l === label);
+  const currentRaw = DAMAGE_TYPE_VALUES.find(([v,l]) => v === current || l === current || l === label)?.[0] || current;
+  return [...(!known && current ? [[current, label]] : []), ...DAMAGE_TYPE_VALUES.map(([v,l]) => [v,l])].map(([v,l]) => [v,l, v === currentRaw]);
+}
 function renderExtraDamageRows(item) {
   const rows = item.extraDamage || [];
-  return `<div class="extra-damage-list" id="extraDamageList">${rows.map((x, i) => `<div class="extra-damage-row" data-extra-row><input name="extraFormula" value="${escapeHtml(x.formula)}" placeholder="Ex.: 1d6+2"><input name="extraType" value="${escapeHtml(x.type || "")}" placeholder="Tipo de dano"><button type="button" data-remove-extra="${i}">×</button></div>`).join("")}</div><button type="button" class="editor-add-extra" id="editorAddExtra">+ ADICIONAR DANO EXTRA</button>`;
+  const row = (x = {}, i = "") => `<div class="extra-damage-card" data-extra-row><div class="extra-damage-index"><span>DANO EXTRA</span><strong>${String(Number(i)+1).padStart(2,"0")}</strong></div><label><span>FÓRMULA</span><input name="extraFormula" value="${escapeHtml(x.formula || "")}" placeholder="Ex.: 1d6+2"></label><label><span>TIPO DE DANO</span><select name="extraType">${damageTypeOptions(x.type || "").map(([v,l,sel]) => `<option value="${escapeHtml(v)}" ${(sel || String(v) === String(x.type || "")) ? "selected" : ""}>${escapeHtml(l)}</option>`).join("")}</select></label><button type="button" class="extra-remove" data-remove-extra="${i}" aria-label="Remover dano extra">×</button></div>`;
+  return `<div class="extra-damage-list" id="extraDamageList">${rows.map(row).join("")}</div><button type="button" class="editor-add-extra" id="editorAddExtra">+ ADICIONAR DANO EXTRA</button>`;
 }
 function openEditor(kind, index) {
   if (!state.canEdit) return; state.editor = { kind, index: Number(index) }; const arr = currentList(kind), item = arr[index]; if (!item) return;
   $("#editorEyebrow").textContent = `REGISTRO DSO // EDIÇÃO LOCAL // ${kind === "inventory" ? "ALMOXARIFADO" : kind === "rituals" ? "OCULTISMO" : "CAPACIDADES"}`; $("#editorTitle").textContent = `EDITAR // ${displayItemName(item, kind)}`;
-  const attrOpts = [["", "Nenhum"], ...Object.entries(ATTRIBUTES).map(([k, a]) => [k, a.label])], skillOpts = SKILLS.map(s => [s.key, s.label]); let html = `<div class="editor-grid">`;
+  const attrOpts = [["", "Nenhum"], ...Object.entries(ATTRIBUTES).map(([k, a]) => [k, a.label])], skillOpts = SKILLS.map(s => [s.key, s.label]);
+  let html = `<div class="editor-stack">`;
   if (kind === "inventory") {
-    html += editorField("NOME", "name", item.name, { span: 2 }) + editorField("CATEGORIA BASE", "category", item.category, { type: "number", min: 0, max: 4 }) + editorField("ESPAÇOS", "weight", item.weight, { type: "number", min: 0 });
+    html += editorSection("REGISTRO", "IDENTIFICAÇÃO", editorField("NOME", "name", item.name, { span: 2 }) + editorField("CATEGORIA BASE", "category", item.category, { type: "number", min: 0, max: 4 }) + editorField("ESPAÇOS", "weight", item.weight, { type: "number", min: 0 }));
     if (item.type === "armament") {
       const crit = parseBaseCritical(item);
-      html += `<div class="editor-subhead">ATAQUE E DANO</div>` + editorField("DANO BASE", "damage.formula", item.damage?.formula || "", { span: 2 }) + editorField("MARGEM DE CRÍTICO", "criticalThreshold", crit.threshold, { type: "number", min: 2, max: 20 }) + editorField("MULTIPLICADOR", "criticalMultiplier", crit.mult, { type: "number", min: 2, max: 10 }) + editorField("BÔNUS DE ATAQUE", "attack.bonus", item.attack?.bonus || 0, { type: "number" }) + editorField("PERÍCIA", "attack.skill", item.attack?.skill || (item.rangeType === "ranged" ? "aim" : "fighting"), { options: skillOpts }) + editorField("ATRIBUTO DE ATAQUE", "attack.attr", item.attack?.attr || (item.rangeType === "ranged" ? "dex" : "str"), { options: attrOpts }) + editorField("ATRIBUTO NO DANO", "damage.attr", item.damage?.attr || "", { options: attrOpts }) + editorField("BÔNUS DE DANO", "damage.bonus", item.damage?.bonus || 0, { type: "number" }) + editorField("TIPO DE DANO", "damage.type", item.damage?.type || "", { options: damageTypeOptions(item.damage?.type || "") }) + editorField("ALCANCE", "range", item.range || "") + editorField("PROFICIÊNCIA", "proficiency", item.proficiency || "") + editorField("EMPUNHADURA", "gripType", item.gripType || "") + editorField("TIPO DE ALCANCE", "rangeType", item.rangeType || "");
-      html += `<div class="editor-subhead">DANO EXTRA</div>${renderExtraDamageRows(item)}`;
-    } else if (item.type === "protection") html += editorField("DEFESA", "defense", item.defense || 0, { type: "number" }) + editorField("TIPO", "type", item.type || "");
-    html += `<div class="editor-subhead">DESCRIÇÃO</div>` + editorField("DESCRIÇÃO / OBSERVAÇÕES", "description", item.description || "", { type: "textarea", span: 4 });
+      html += editorSection("CONFIGURAÇÃO DE USO", "ATAQUE", editorField("PERÍCIA", "attack.skill", item.attack?.skill || (item.rangeType === "ranged" ? "aim" : "fighting"), { options: skillOpts }) + editorField("ATRIBUTO DE ATAQUE", "attack.attr", item.attack?.attr || (item.rangeType === "ranged" ? "dex" : "str"), { options: attrOpts }) + editorField("BÔNUS DE ATAQUE", "attack.bonus", item.attack?.bonus || 0, { type: "number" }) + editorField("PROFICIÊNCIA", "proficiency", item.proficiency || "", { options: Object.entries(PROFICIENCY_LABELS) }) + editorField("EMPUNHADURA", "gripType", item.gripType || "", { options: Object.entries(GRIP_LABELS) }) + editorField("TIPO DE ALCANCE", "rangeType", item.rangeType || "", { options: Object.entries(RANGE_TYPE_LABELS) }) + editorField("ALCANCE", "range", rangeLabel(item.range || "")));
+      html += editorSection("PERFIL DE DANO", "DANO & CRÍTICO", editorField("DANO BASE", "damage.formula", item.damage?.formula || "", { span: 2 }) + editorField("TIPO DE DANO", "damage.type", item.damage?.type || "", { options: damageTypeOptions(item.damage?.type || "") }) + editorField("ATRIBUTO NO DANO", "damage.attr", item.damage?.attr || "", { options: attrOpts }) + editorField("BÔNUS DE DANO", "damage.bonus", item.damage?.bonus || 0, { type: "number" }) + editorField("MARGEM DE CRÍTICO", "criticalThreshold", crit.threshold, { type: "number", min: 2, max: 20 }) + editorField("MULTIPLICADOR", "criticalMultiplier", crit.mult, { type: "number", min: 2, max: 10 }));
+      html += editorSection("COMPONENTES ADICIONAIS", "DANO EXTRA", renderExtraDamageRows(item), "extra-section");
+    } else if (item.type === "protection") {
+      html += editorSection("PROTEÇÃO", "DEFESA", editorField("DEFESA", "defense", item.defense || 0, { type: "number" }) + editorField("TIPO", "type", item.type || "", { options: [[item.type || "protection", friendlyValue(item.type || "protection")]] }));
+    }
+    html += editorSection("ARQUIVO", "DESCRIÇÃO / OBSERVAÇÕES", editorField("TEXTO", "description", item.description || "", { type: "textarea", span: 4, cleanText: true }), "description-section");
   } else if (kind === "abilities") {
-    html += editorField("NOME", "name", item.name, { span: 2 }) + editorField("GRUPO", "group", item.group || "") + editorField("TRILHA / ELEMENTO", "path", item.path || "") + editorField("ATIVAÇÃO", "activation", item.activation || "") + editorField("CUSTO", "cost", item.cost || "") + editorField("TIPO DO CUSTO", "costType", item.costType || "PD") + editorField("PRÉ-REQUISITO", "preRequisite", item.preRequisite || "", { span: 2 }) + editorField("DESCRIÇÃO", "description", item.description || "", { type: "textarea", span: 4 });
+    html += editorSection("CAPACIDADE", "IDENTIFICAÇÃO", editorField("NOME", "name", item.name, { span: 2 }) + editorField("GRUPO", "group", item.group || "") + editorField("TRILHA / ELEMENTO", "path", item.path || ""));
+    html += editorSection("REGRA", "ATIVAÇÃO & REQUISITOS", editorField("ATIVAÇÃO", "activation", item.activation || "") + editorField("CUSTO", "cost", item.cost || "") + editorField("TIPO DO CUSTO", "costType", item.costType || "PD") + editorField("PRÉ-REQUISITO", "preRequisite", item.preRequisite || "", { span: 2 }));
+    html += editorSection("ARQUIVO", "DESCRIÇÃO", editorField("DESCRIÇÃO", "description", item.description || "", { type: "textarea", span: 4, cleanText: true }), "description-section");
   } else {
     const modes = item.damageModes || {};
-    html += editorField("NOME", "name", item.name, { span: 2 }) + editorField("ELEMENTO", "element", item.element || "", { options: [["knowledge", "Conhecimento"], ["energy", "Energia"], ["death", "Morte"], ["blood", "Sangue"], ["fear", "Medo"]] }) + editorField("CÍRCULO", "circle", item.circle || 1, { type: "number", min: 1, max: 4 }) + editorField("EXECUÇÃO", "execution", item.execution || "") + editorField("ALCANCE", "range", item.range || "") + editorField("ALVO", "target", item.target || "") + editorField("DURAÇÃO", "duration", item.duration || "") + editorField("RESISTÊNCIA", "resistance", item.resistance || "", { span: 2 });
-    html += `<div class="editor-subhead">DANO POR FORMA</div>`;
-    for (const mode of ["normal", "discente", "verdadeiro"]) { const v = modes[mode] || {}; html += editorField(`${mode.toUpperCase()} — FÓRMULA`, `ritual.${mode}.formula`, v.formula || "") + editorField(`${mode.toUpperCase()} — TIPO`, `ritual.${mode}.type`, v.type || ""); }
-    html += `<div class="editor-subhead">DESCRIÇÃO</div>` + editorField("DESCRIÇÃO COMPLETA", "description", item.description || "", { type: "textarea", span: 4 });
+    html += editorSection("RITUAL", "IDENTIFICAÇÃO", editorField("NOME", "name", item.name, { span: 2 }) + editorField("ELEMENTO", "element", item.element || "", { options: [["knowledge", "Conhecimento"], ["energy", "Energia"], ["death", "Morte"], ["blood", "Sangue"], ["fear", "Medo"]] }) + editorField("CÍRCULO", "circle", item.circle || 1, { type: "number", min: 1, max: 4 }));
+    html += editorSection("CONJURAÇÃO", "PARÂMETROS", editorField("EXECUÇÃO", "execution", ritualLabel("execution", item.execution || "")) + editorField("ALCANCE", "range", ritualLabel("range", item.range || "")) + editorField("ALVO", "target", ritualLabel("target", item.target || "")) + editorField("DURAÇÃO", "duration", ritualLabel("duration", item.duration || "")) + editorField("RESISTÊNCIA", "resistance", ritualLabel("resistance", item.resistance || ""), { span: 2 }));
+    let modeFields = ""; for (const mode of ["normal", "discente", "verdadeiro"]) { const v = modes[mode] || {}; modeFields += editorField(`${mode.toUpperCase()} — FÓRMULA`, `ritual.${mode}.formula`, v.formula || "") + editorField(`${mode.toUpperCase()} — TIPO`, `ritual.${mode}.type`, v.type || "", { options: damageTypeOptions(v.type || "") }); }
+    html += editorSection("ROLAGEM DIRETA", "DANO POR FORMA", modeFields);
+    html += editorSection("ARQUIVO", "DESCRIÇÃO", editorField("DESCRIÇÃO COMPLETA", "description", item.description || "", { type: "textarea", span: 4, cleanText: true }), "description-section");
   }
   html += `</div>`; $("#editorBody").innerHTML = html;
   const enhance = $("#editorEnhancements"), can = kind === "inventory" && (modificationsFor(item).length || cursesFor(item).length); enhance.classList.toggle("hidden", !can);
@@ -553,14 +594,20 @@ $("#saveBtn").addEventListener("click", () => void save());
 for (const id of ["name", "class", "trail", "nexBase", "level", "pv", "pd", "pvBonus", "pdBonus", "defBonus", "movementBonus", "ritualDtBonus", "prestige"]) {
   $("#" + id).addEventListener("input", () => { if (!state.canEdit) return; readCore(); setDirty(); if (id === "name") $("#topName").textContent = $("#name").value.toUpperCase(); if (["class", "nexBase", "level"].includes(id)) { renderSkills(); renderCollections(); } });
 }
-$("#class").addEventListener("change", () => { if (!state.canEdit) return; readCore(); renderDerived(); renderCollections(); setDirty(); });
-$("#origin").addEventListener("change", () => { if (state.canEdit) applyOriginSelection($("#origin").value); });
+$("#class").addEventListener("change", () => { syncDsoSelect("class"); if (!state.canEdit) return; readCore(); renderDerived(); renderCollections(); setDirty(); });
+$("#origin").addEventListener("change", () => { syncDsoSelect("origin"); if (state.canEdit) applyOriginSelection($("#origin").value); });
+$("#trail").addEventListener("change", () => syncDsoSelect("trail"));
 $("#attributes").addEventListener("input", () => { if (!state.canEdit) return; readCore(); renderSkills(); setDirty(); });
 $("#skills").addEventListener("input", () => { if (!state.canEdit) return; readCore(); setDirty(); });
 $("#skills").addEventListener("change", () => { if (!state.canEdit) return; readCore(); renderSkills(); setDirty(); });
 $("#skills").addEventListener("click", e => { const b = e.target.closest("[data-roll]"); if (b) void rollSkillFromSheet(b.dataset.roll); });
 
 document.addEventListener("click", e => {
+  const trigger = e.target.closest(".dso-select-trigger");
+  if (trigger) { const wrap = trigger.closest(".dso-select"); if (!trigger.disabled) { const opening = !wrap.classList.contains("open"); closeDsoSelects(wrap); wrap.classList.toggle("open", opening); trigger.setAttribute("aria-expanded", String(opening)); } return; }
+  const option = e.target.closest("[data-dso-option]");
+  if (option) { const wrap = option.closest(".dso-select"), id = wrap?.dataset.selectFor, select = id ? $("#" + id) : null; if (select && !select.disabled) { select.value = option.dataset.dsoOption; syncDsoSelect(id); closeDsoSelects(); select.dispatchEvent(new Event("input", { bubbles:true })); select.dispatchEvent(new Event("change", { bubbles:true })); } return; }
+  if (!e.target.closest(".dso-select")) closeDsoSelects();
   const open = e.target.closest("[data-open-library]"); if (open) { openLibrary(open.dataset.openLibrary); return; }
   const attack = e.target.closest("[data-weapon-attack]"); if (attack) { void attackWithWeapon(Number(attack.dataset.weaponAttack)); return; }
   const ritual = e.target.closest("[data-ritual-roll]"); if (ritual) { const [i, mode] = ritual.dataset.ritualRoll.split(":"); void rollRitualDamage(Number(i), mode); return; }
@@ -600,10 +647,11 @@ $("#editorClose").addEventListener("click", closeEditor); $("#editorCancel").add
 $("#editorForm").addEventListener("submit", e => { e.preventDefault(); if (state.canEdit) saveEditor(); });
 $("#editorBody").addEventListener("click", e => {
   const rem = e.target.closest("[data-remove-extra]"); if (rem) { rem.closest("[data-extra-row]")?.remove(); return; }
-  if (e.target.id === "editorAddExtra") { const list = $("#extraDamageList"); if (list) list.insertAdjacentHTML("beforeend", `<div class="extra-damage-row" data-extra-row><input name="extraFormula" placeholder="Ex.: 1d6+2"><input name="extraType" placeholder="Tipo de dano"><button type="button" data-remove-extra>×</button></div>`); }
+  if (e.target.id === "editorAddExtra") { const list = $("#extraDamageList"); if (list) { const i = list.querySelectorAll("[data-extra-row]").length; list.insertAdjacentHTML("beforeend", `<div class="extra-damage-card" data-extra-row><div class="extra-damage-index"><span>DANO EXTRA</span><strong>${String(i+1).padStart(2,"0")}</strong></div><label><span>FÓRMULA</span><input name="extraFormula" placeholder="Ex.: 1d6+2"></label><label><span>TIPO DE DANO</span><select name="extraType">${damageTypeOptions("").map(([v,l]) => `<option value="${escapeHtml(v)}">${escapeHtml(l)}</option>`).join("")}</select></label><button type="button" class="extra-remove" data-remove-extra aria-label="Remover dano extra">×</button></div>`); } }
 });
 $("#editorEnhancements").addEventListener("click", () => { if (state.editor.kind === "inventory") openEnhancement(state.editor.index); });
 
+document.addEventListener("keydown", e => { if (e.key !== "Escape") return; if (!$("#enhancementModal").classList.contains("hidden")) { e.preventDefault(); closeEnhancement(); return; } if (!$("#editorModal").classList.contains("hidden")) { e.preventDefault(); closeEditor(); return; } if (!$("#libraryModal").classList.contains("hidden")) { e.preventDefault(); closeLibrary(); return; } closeDsoSelects(); });
 $("#rollPopupClose").addEventListener("click", () => { clearTimeout(state.popupTimer); $("#rollPopup").classList.add("hidden"); });
 $("#rollPopupDamage").addEventListener("click", e => { const i = Number(e.currentTarget.dataset.weaponDamage); if (Number.isInteger(i)) void damageWithWeapon(i); });
 

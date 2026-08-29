@@ -1,8 +1,10 @@
-# DSO System v0.5.0
+> **v0.5.1 — Tech Noir UX Stabilization:** esta revisão é focada no feedback da primeira build de teste: legibilidade, alinhamento, selects, inventário, editor de armas, nomenclaturas e camadas de modal.
+
+# DSO System v0.5.1
 
 Extensão de gestão de **PROTAGONISTAS** de Ordem Paranormal para Owlbear Rodeo, construída na identidade **Tech Noir DSO**.
 
-A v0.5.0 parte da v0.4.0 como baseline estável e muda a arquitetura da ficha sem desfazer o renderer estabilizado do Arquivo DSO. O foco desta edição é tornar a ficha uma interface operacional de sessão: núcleo do protagonista e perícias sempre visíveis, quatro módulos de ação, rolagens locais imediatas, edição individual de registros e persistência oficial no Owlbear.
+A linha v0.5 parte da v0.4.0 como baseline estável e muda a arquitetura da ficha sem desfazer o renderer estabilizado do Arquivo DSO. O foco desta edição é tornar a ficha uma interface operacional de sessão: núcleo do protagonista e perícias sempre visíveis, quatro módulos de ação, rolagens locais imediatas, edição individual de registros e persistência oficial no Owlbear.
 
 ## Estrutura da ficha
 
