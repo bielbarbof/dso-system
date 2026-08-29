@@ -1,23 +1,50 @@
-# Changelog
+# DSO System — Changelog
 
-## v0.2.0 — Arquivo DSO
+## v0.3.0 — Reestruturação Tech Noir
 
-- `Agente/Personagem` substituído por **PROTAGONISTA** na interface nova.
-- Implementação da regra de **Determinação** como recurso padrão.
-- Implementação de **Nível de Experiência separado de NEX**.
-- Fórmulas de progressão passam a usar Nível de Experiência; NEX permanece independente para exposição paranormal.
-- PV/PD recalculados automaticamente por classe, nível e atributos.
-- Ajustes externos editáveis preservados sem transformar os máximos base em campos manuais.
-- Cards de atributos redesenhados com siglas AGI/FOR/INT/PRE/VIG maiores e sem nomes redundantes.
-- Biblioteca CRIS-like em Tech Noir para itens, habilidades e rituais.
-- 520 registros dos compêndios Foundry normalizados e embarcados na extensão.
-- Filtros e pesquisa para biblioteca de conteúdo.
-- Proteções equipadas alteram Defesa automaticamente; armamentos equipados alimentam a aba Combate.
-- Núcleo de passivos automáticos para bônus permanentes inequívocos de poderes selecionados (recursos, perícias, Defesa e deslocamento).
-- Ponte de perícias para **DSO Chat v0.3.2**.
-- Vínculo de token atualizado para protagonista.
-- Barras anexadas de PV/PD e modal de controle rápido de recursos no token.
-- Manifest corrigido para descrição dentro do limite aceito pelo Owlbear.
+### Interface
+- revisão ampla de alinhamento, espaçamento, hierarquia e consistência visual;
+- ícone oficial alterado para um documento Tech Noir DSO;
+- retrato/foto removido da ficha e do painel de controle;
+- cards de atributos simplificados: siglas maiores, sem repetir o nome por extenso;
+- listas selecionadas agora são agrupadas por categoria;
+- biblioteca refeita para mostrar nome, metadados, resumo e descrição expansível sem depender do carregamento dos ícones.
 
-## v0.1.0
-- Fundação de persistência, permissões, ficha básica, perícias, rolagens e vínculo inicial de token.
+### Perícias + DSO Chat
+- matriz de perícias redesenhada a partir da mesma linguagem da aba + TESTE do DSO Chat;
+- mesmo d20, colunas PERÍCIA / DADOS / BÔNUS / TREINO / OUTROS e estados 0/5/10/15;
+- mini grade AGI/FOR/INT/PRE/VIG adicionada à aba de perícias;
+- alterações continuam sendo exportadas ao DSO Chat pela skill bridge existente.
+
+### Habilidades
+- biblioteca reorganizada em Poderes de Classe, Trilhas, Origens, Poderes Gerais e Poderes Paranormais;
+- Poderes Paranormais não ficam mais misturados com Trilhas;
+- 33 poderes paranormais oficiais foram adicionados ao arquivo estruturado, incluindo o livro básico e Sobrevivendo ao Horror;
+- habilidades já adicionadas à ficha são agrupadas por ORIGEM / CLASSE / TRILHA / PODERES GERAIS / PODERES PARANORMAIS.
+
+### Origem automática
+- ao selecionar uma origem oficial do livro básico, suas perícias treinadas são aplicadas automaticamente;
+- o poder correspondente da origem é adicionado automaticamente à ficha;
+- trocar de origem remove apenas os benefícios que haviam sido aplicados automaticamente pela origem anterior;
+- Amnésico mantém as duas perícias à escolha do Mestre.
+
+### Inventário e Rituais
+- biblioteca não usa mais o layout quebrado da v0.2;
+- descrições podem ser abertas integralmente;
+- inventário selecionado passa a ser agrupado em Armamentos, Proteções e Equipamentos;
+- rituais selecionados passam a ser agrupados por círculo;
+- campos de ritual oriundos do Foundry são exibidos em português (execução, alcance, alvo, duração e resistência);
+- indicadores Discente/Verdadeiro são exibidos como metadados sem duplicar textos inválidos.
+
+### Tokens
+- barras de PV e PD ficaram mais grossas e visíveis;
+- continuam presas ao token e respondendo às alterações da ficha/painel de recursos.
+
+### Mestre
+- botão para excluir protagonista adicionado ao painel de controle;
+- ao excluir, o catálogo é atualizado e vínculos/barras daquele protagonista são limpos dos tokens.
+
+### Correções de assets
+- normalização dos nomes de arquivos vindos do Foundry (`#U00xx`);
+- correção de caminhos com maiúsculas/minúsculas e caracteres acentuados;
+- referências locais do compêndio foram validadas contra os assets disponíveis.

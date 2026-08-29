@@ -1,112 +1,69 @@
-# Instalação e atualização — DSO System v0.2.0
+# Instalação / atualização — DSO System v0.3.0
 
-## Se você já instalou a v0.1.0
+## Atualizando uma instalação existente
 
-Você **não precisa criar outro repositório nem outro Static Site**.
+1. Descompacte o ZIP da v0.3.0.
+2. Abra o repositório `dso-system` no GitHub Desktop.
+3. Abra a pasta local do repositório.
+4. Copie **todos os arquivos da v0.3.0 por cima dos antigos**, incluindo `assets/` e `data/`.
+5. No GitHub Desktop, crie o commit `DSO System v0.3.0`.
+6. Clique em **Push origin**.
+7. Aguarde o Render terminar o novo deploy.
+8. Recarregue o Owlbear Rodeo.
 
-1. Baixe e descompacte a v0.2.0.
-2. No repositório `dso-system` do GitHub, use **Add file → Upload files**.
-3. Arraste os arquivos da v0.2.0 para a raiz do repositório, substituindo os arquivos antigos. Inclua também as pastas `data/` e `assets/`.
-4. Faça **Commit changes**.
-5. Aguarde o Render terminar o novo deploy.
-6. Recarregue o Owlbear Rodeo.
+Não é necessário remover a extensão do Owlbear. O link de instalação continua o mesmo.
 
-O Install Link continua o mesmo, por exemplo:
-
-`https://dso-system.onrender.com/manifest.json`
-
-Se o Render colocou um sufixo no seu domínio, use o endereço real exibido pelo Render.
+> A pasta `assets` possui muitos arquivos. Para esta extensão, prefira o GitHub Desktop ao upload pelo navegador do GitHub, que costuma limitar uploads grandes em quantidade de arquivos.
 
 ## Instalação do zero
 
-### 1. GitHub
+### GitHub
 
-Crie um repositório público chamado `dso-system`. Não é necessário inicializar com README, licença ou `.gitignore`.
+Crie um repositório público, por exemplo:
 
-Abra **Add file → Upload files** e envie o conteúdo descompactado da extensão. O arquivo `manifest.json` deve ficar na raiz, ao lado de `index.html`.
+`dso-system`
 
-Estrutura mínima esperada:
+Envie os arquivos da extensão para a raiz do repositório. O `manifest.json` precisa ficar diretamente na raiz.
 
-```text
-dso-system/
-├─ manifest.json
-├─ index.html
-├─ app.js
-├─ core.js
-├─ background.html
-├─ background.js
-├─ sheet.html
-├─ sheet.js
-├─ sheet.css
-├─ link.html
-├─ resources.html
-├─ data/
-│  └─ compendium.json
-└─ assets/
-   └─ foundry/
-```
+### Render
 
-Faça **Commit changes**.
-
-### 2. Render
-
-Crie **New → Static Site** e conecte o repositório `dso-system`.
-
-Use:
+Crie **New → Static Site** e conecte o repositório.
 
 - Branch: `main`
 - Root Directory: vazio
 - Build Command: `echo "No build required"`
 - Publish Directory: `.`
 
-Faça o deploy.
+Após o deploy, teste no navegador:
 
-### 3. Headers
+`https://SEU-DOMINIO-REAL.onrender.com/manifest.json`
 
-No Static Site do Render, abra **Headers** e adicione:
+O JSON deve mostrar `DSO System` e a versão `0.3.0`.
 
-```text
-Request Path: /*
-Header Name: Access-Control-Allow-Origin
-Header Value: https://www.owlbear.rodeo
-```
+### Headers no Render
+
+Adicione:
+
+- Request Path: `/*`
+- Header Name: `Access-Control-Allow-Origin`
+- Header Value: `https://www.owlbear.rodeo`
 
 E:
 
-```text
-Request Path: /*
-Header Name: Access-Control-Allow-Methods
-Header Value: GET, OPTIONS
-```
+- Request Path: `/*`
+- Header Name: `Access-Control-Allow-Methods`
+- Header Value: `GET, OPTIONS`
 
-### 4. Teste do manifesto
+### Owlbear Rodeo
 
-Abra no navegador:
+Em **Extensions → Add Extension**, use o endereço real do seu Render terminado em:
+
+`/manifest.json`
+
+Exemplo apenas se o domínio realmente for esse:
 
 `https://dso-system.onrender.com/manifest.json`
 
-O JSON deve mostrar `"name": "DSO System"` e `"version": "0.2.0"`.
+## DSO Chat
 
-### 5. Owlbear Rodeo
-
-Em **Extensions → Add a custom extension**, cole o endereço do `manifest.json` e adicione a extensão.
-
-## DSO Chat v0.3.2
-
-Para a integração de perícias, atualize também o repositório do DSO Chat com a v0.3.2. É o mesmo processo: substitua os arquivos no GitHub, faça commit e espere o Render redeployar. O Install Link do DSO Chat não muda.
-
-Depois de ambos atualizados:
-
-1. O Mestre cria/abre um **PROTAGONISTA** no DSO System.
-2. Define AGI/FOR/INT/PRE/VIG e perícias.
-3. Atribui o protagonista a um jogador conectado.
-4. O jogador abre o DSO Chat.
-5. A aba **+ TESTE** recebe os atributos e perícias da ficha automaticamente.
-
-## Teste das barras no token
-
-1. Adicione um token como `CHARACTER` na cena.
-2. Abra o menu de contexto DSO System e vincule um protagonista.
-3. Duas barras passam a acompanhar o token: PV e PD.
-4. Use **DSO System — PV / PD** no menu de contexto para alterar os recursos rapidamente.
-5. A alteração também é refletida na ficha do protagonista.
+Para sincronizar a matriz de perícias, use o DSO Chat v0.3.2 ou posterior. Não é necessário alterar o visual do DSO Chat; o DSO System publica o perfil pela ponte já existente.

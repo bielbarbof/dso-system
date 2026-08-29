@@ -1,43 +1,43 @@
-# DSO System — Relatório do Compêndio v0.2.0
+# Relatório do Compêndio — DSO System v0.3.0
 
-A biblioteca desta versão foi gerada a partir dos compêndios estruturados presentes no sistema/world do Foundry enviado para o projeto.
+## Conteúdo estruturado nesta versão
 
-## Registros importados
+- **302 habilidades/poderes** no catálogo de habilidades;
+- **151 registros de inventário**;
+- **100 rituais**;
+- **33 Poderes Paranormais** em categoria própria;
+- **26 origens do livro básico** com automação de perícias + poder.
 
-| Grupo | Registros |
-|---|---:|
-| Habilidades, poderes, origens e trilhas | 269 |
-| Armamentos, equipamentos e proteções | 151 |
-| Rituais | 100 |
-| **Total selecionável** | **520** |
+## Organização de Habilidades
 
-## Habilidades
+A biblioteca não mistura mais todos os tipos. A hierarquia da v0.3.0 é:
 
-- Combatente: 29
-- Especialista: 26
-- Ocultista: 29
-- Sobrevivente: 8
-- Poderes de Origem: 26
-- Poderes Gerais: 38
-- Trilhas de Combatente: 44
-- Trilhas de Especialista: 32
-- Trilhas de Ocultista: 37
+1. Poderes de Classe
+   - Combatente
+   - Especialista
+   - Ocultista
+   - Sobrevivente
+2. Trilhas
+3. Origens
+4. Poderes Gerais
+5. Poderes Paranormais
+   - Conhecimento
+   - Energia
+   - Morte
+   - Sangue
 
-## Inventário
+## Origem
 
-O catálogo inclui as categorias estruturadas encontradas no Foundry, entre elas armas simples/táticas/pesadas, munições, acessórios, explosivos, itens operacionais, medicamentos, itens paranormais, catalisadores e proteções.
+As 26 origens do livro básico têm uma regra estruturada no `compendium.json`. Ao selecionar a origem, o DSO System aplica treinamento nas perícias indicadas e adiciona o poder correspondente. Amnésico é tratado como exceção porque suas duas perícias dependem de escolha do Mestre.
 
-## Rituais
+## Poderes Paranormais
 
-Foram importados 100 registros do compêndio `rituais-completo`, com círculo, elemento, execução, alcance, alvo, duração, resistência, formas Discente/Verdadeiro e descrição disponíveis quando presentes no dado de origem.
+A seção própria reúne poderes do livro básico e poderes adicionais de *Sobrevivendo ao Horror*. Eles permanecem vinculados a **NEX**, diferentemente das progressões mundanas de classe/trilha que podem ser apresentadas como Nível na regra de Nível e NEX separados.
 
-Distribuição encontrada:
-- Conhecimento: 23
-- Energia: 23
-- Morte: 24
-- Sangue: 24
-- Medo: 6
+## Assets do Foundry
 
-## Regra de portabilidade
+Os caminhos locais foram revisados na v0.3.0. Nomes de arquivo exportados com sequências como `#U00e7` foram normalizados, e referências com diferenças de caixa foram corrigidas.
 
-A extensão preserva dados estruturados dos compêndios. Efeitos permanentes que já possuem campo mecânico estruturado (por exemplo Defesa de proteção, dano/ataque de armamento e recursos derivados da ficha) podem entrar diretamente nos cálculos. Poderes cujo efeito existe apenas como texto continuam visíveis e selecionáveis, mas não são convertidos silenciosamente em uma regra inventada: automações adicionais devem ser implementadas de forma explícita para não alterar o comportamento da regra original.
+## Escopo ainda em expansão
+
+O arquivo Foundry e os livros do projeto possuem material suficiente para continuar ampliando o arquivo DSO (novas origens oficiais, itens amaldiçoados, conteúdos de Arquivos Secretos e suplementos). A v0.3.0 prioriza corrigir a experiência de uso, organizar corretamente os catálogos e estabilizar a automação antes de transformar todo conteúdo restante em registros estruturados.

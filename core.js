@@ -76,7 +76,7 @@ export function effectiveSkill(c,skillKey){
 }
 
 export function defaultSkills(){
-  return Object.fromEntries(SKILLS.map(s=>[s.key,{label:s.label,attr:s.attr,training:0,mod:0,load:s.load,trainedOnly:s.trained,name:s.key==="freeSkill"?"Profissão":""}]));
+  return Object.fromEntries(SKILLS.map(s=>[s.key,{label:s.label,attr:s.attr,training:0,mod:0,load:s.load,trainedOnly:s.trained,name:s.key==="freeSkill"?"Profissão":"",originSource:""}]));
 }
 
 export function makeCharacter(){
@@ -84,7 +84,7 @@ export function makeCharacter(){
   return {
     schema:2,id:uid(),type:"protagonist",name:"Novo Protagonista",portrait:"",controllers:[],createdAt:now,updatedAt:now,
     system:{
-      class:"",origin:"",trilha:"",NEX:{value:0},nivel:{value:1},stage:{value:1},patent:{name:"Recruta",prestigePoints:0},
+      class:"",origin:"",originState:{appliedOrigin:""},trilha:"",NEX:{value:0},nivel:{value:1},stage:{value:1},patent:{name:"Recruta",prestigePoints:0},
       PV:{value:0,max:0,manualMax:0},PD:{value:0,max:0,manualMax:0,perRound:1},
       defense:{value:10,dodge:10,manual:0,equipment:0},desloc:{base:9,manual:0,value:9},ritual:{DT:10,manualDT:0},
       attributes:{dex:{value:1},str:{value:1},int:{value:1},pre:{value:1},vit:{value:1}},skills:defaultSkills(),
@@ -98,7 +98,7 @@ function normalizeAddedItem(x,kind){
   return {
     id:String(x.id||uid()), catalogId:String(x.catalogId||x.sourceId||""), kind,
     name:String(x.name||"Sem nome").slice(0,180), image:String(x.image||x.img||"").slice(0,1200),
-    description:String(x.description||"").slice(0,40000), group:String(x.group||""), path:String(x.path||""), type:String(x.type||""),
+    description:String(x.description||"").slice(0,40000), group:String(x.group||""), path:String(x.path||""), type:String(x.type||""), autoSource:String(x.autoSource||""),
     activation:String(x.activation||""), cost:String(x.cost||""), costType:String(x.costType||""), preRequisite:String(x.preRequisite||""),
     circle:clamp(x.circle??0,0,9),element:String(x.element||""),execution:String(x.execution||""),range:String(x.range||""),target:String(x.target||""),duration:String(x.duration||""),resistance:String(x.resistance||""),studentForm:String(x.studentForm||""),trueForm:String(x.trueForm||""),
     category:String(x.category||""),weight:Number(x.weight)||0,quantity:Math.max(0,Number(x.quantity)||1),equipped:Boolean(x.equipped),defense:Number(x.defense)||0,
@@ -111,7 +111,7 @@ export function normalizeCharacter(raw){
   const c=b; c.id=String(raw.id||b.id); c.type="protagonist"; c.name=String(raw.name||b.name).slice(0,100); c.portrait=String(raw.portrait||"").slice(0,1500);
   c.controllers=Array.isArray(raw.controllers)?raw.controllers.filter(x=>typeof x==="string").slice(0,16):[]; c.createdAt=Number(raw.createdAt)||Date.now(); c.updatedAt=Number(raw.updatedAt)||Date.now();
   const s=raw.system||{}, o=c.system;
-  o.class=CLASSES[s.class]?s.class:""; o.origin=String(s.origin||"").slice(0,120); o.trilha=String(s.trilha||"").slice(0,120);
+  o.class=CLASSES[s.class]?s.class:""; o.origin=String(s.origin||"").slice(0,120); o.originState={appliedOrigin:String(s.originState?.appliedOrigin||"").slice(0,120)}; o.trilha=String(s.trilha||"").slice(0,120);
   o.NEX.value=clamp(s.NEX?.value??0,0,100); o.nivel.value=clamp(s.nivel?.value??1,1,20); o.stage.value=clamp(s.stage?.value??1,1,5);
   o.patent.name=String(s.patent?.name||"Recruta").slice(0,80); o.patent.prestigePoints=clamp(s.patent?.prestigePoints??0,-9999,99999);
   for(const k of Object.keys(ATTRIBUTES)) o.attributes[k].value=clamp(s.attributes?.[k]?.value??1,0,10);
@@ -119,7 +119,7 @@ export function normalizeCharacter(raw){
   o.PV.manualMax=clamp(s.PV?.manualMax??s.PV?.bonus??0,-999,9999); o.PD.manualMax=clamp(s.PD?.manualMax??s.PD?.bonus??0,-999,9999);
   o.PV.value=Number.isFinite(Number(s.PV?.value))?Number(s.PV.value):0; o.PD.value=Number.isFinite(Number(s.PD?.value))?Number(s.PD.value):0;
   o.defense.manual=clamp(s.defense?.manual??s.defense?.bonus??0,-99,99); o.desloc.base=clamp(s.desloc?.base??s.desloc?.value??9,0,99); o.desloc.manual=clamp(s.desloc?.manual??s.desloc?.bonus??0,-99,99); o.ritual.manualDT=clamp(s.ritual?.manualDT??0,-99,99);
-  for(const sk of SKILLS){ const v=s.skills?.[sk.key]||{}; const base=o.skills[sk.key]; base.attr=ATTRIBUTES[v.attr]?v.attr:sk.attr; base.training=[0,5,10,15].includes(Number(v.training))?Number(v.training):[0,5,10,15].includes(Number(v.degree?.value))?Number(v.degree.value):0; base.mod=clamp(v.mod??v.value??0,-99,99); if(sk.key==="freeSkill")base.name=String(v.name||"Profissão").slice(0,80); }
+  for(const sk of SKILLS){ const v=s.skills?.[sk.key]||{}; const base=o.skills[sk.key]; base.attr=ATTRIBUTES[v.attr]?v.attr:sk.attr; base.training=[0,5,10,15].includes(Number(v.training))?Number(v.training):[0,5,10,15].includes(Number(v.degree?.value))?Number(v.degree.value):0; base.mod=clamp(v.mod??v.value??0,-99,99); if(sk.key==="freeSkill")base.name=String(v.name||"Profissão").slice(0,80); base.originSource=String(v.originSource||"").slice(0,120); }
   o.inventory=(Array.isArray(s.inventory)?s.inventory:[]).map(x=>normalizeAddedItem(x,"inventory")).filter(Boolean).slice(0,300);
   o.abilities=(Array.isArray(s.abilities)?s.abilities:[]).map(x=>normalizeAddedItem(x,"ability")).filter(Boolean).slice(0,300);
   o.rituals=(Array.isArray(s.rituals)?s.rituals:[]).map(x=>normalizeAddedItem(x,"ritual")).filter(Boolean).slice(0,300);

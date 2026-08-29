@@ -1,8 +1,8 @@
-# DSO System — Auditoria de Portabilidade v0.2
+# DSO System — Auditoria de Portabilidade v0.3
 
 ## Situação atual
 
-O sistema Foundry fornecido foi usado como referência estrutural para o port. A v0.2.0 já deixa de ser apenas uma prova de conceito de ficha: ela possui modelo próprio de **PROTAGONISTA**, biblioteca de compêndios e integração com tokens/DSO Chat.
+O sistema Foundry fornecido foi usado como referência estrutural para o port. A v0.3.0 consolida de ser apenas uma prova de conceito de ficha: ela possui modelo próprio de **PROTAGONISTA**, biblioteca de compêndios e integração com tokens/DSO Chat.
 
 ## Regras de campanha fixadas nesta linha
 
@@ -26,7 +26,7 @@ O sistema Foundry fornecido foi usado como referência estrutural para o port. A
 
 ## Compêndios
 
-A v0.2.0 embarca 520 registros estruturados originados dos packs disponíveis no Foundry fornecido. Consulte `COMPENDIUM_REPORT.md`.
+A v0.3.0 mantém o port estruturado dos packs do Foundry, reorganiza seus catálogos e acrescenta Poderes Paranormais e regras de origem estruturadas. Consulte `COMPENDIUM_REPORT.md`.
 
 ## Automação
 
