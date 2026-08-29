@@ -1,27 +1,37 @@
-# Atualizando para DSO System v0.4.0
+# Atualizando para DSO System v0.5.0
 
-Para esta extensão, use **GitHub Desktop**, pois a pasta `assets` possui muitos arquivos para o uploader do navegador.
+Use **GitHub Desktop** para atualizar, porque a extensão possui centenas de assets e o uploader do navegador do GitHub limita lotes grandes.
 
-1. Abra o GitHub Desktop.
-2. Se ainda não fez isso, use **File → Clone repository** e clone seu repositório `dso-system`.
-3. Descompacte `dso-system-owlbear-v0.4.0.zip`.
-4. Copie **todos os arquivos e pastas de dentro** da v0.4.0.
-5. Cole na pasta local clonada do repositório `dso-system`.
-6. Quando o Windows perguntar, escolha **Substituir os arquivos no destino**.
-7. Volte ao GitHub Desktop.
-8. Em **Summary**, escreva `DSO System v0.4.0`.
-9. Clique em **Commit to main**.
-10. Clique em **Push origin**.
-11. Aguarde o Render iniciar e concluir o novo deploy.
-12. Recarregue o Owlbear Rodeo.
+1. Abra o GitHub Desktop e selecione o repositório `dso-system`.
+2. Descompacte `dso-system-owlbear-v0.5.0.zip`.
+3. Copie **todos os arquivos e pastas de dentro** da pasta v0.5.0.
+4. Cole por cima da pasta local clonada do repositório.
+5. Confirme **Substituir os arquivos no destino** quando o sistema perguntar.
+6. No GitHub Desktop, confira as alterações.
+7. Em **Summary**, escreva `DSO System v0.5.0`.
+8. Clique em **Commit to main**.
+9. Clique em **Push origin**.
+10. Aguarde o Render concluir o novo deploy.
+11. Recarregue a sala no Owlbear Rodeo.
 
-Não é necessário remover ou reinstalar a extensão no Owlbear. O endereço do `manifest.json` continua o mesmo.
+Não é necessário remover/reinstalar a extensão. O endereço do `manifest.json` continua o mesmo.
 
-## Teste recomendado
-1. Abra Habilidades e confirme que aparecem cards completos, não linhas vazias.
-2. Expanda uma habilidade e leia a descrição.
-3. Repita em Inventário e Rituais.
-4. No Inventário, altere os PP e confira Patente, Crédito e limites I–IV.
-5. Adicione uma arma, abra **Melhorias**, aplique uma modificação e confira Categoria/Espaços.
-6. Marque **USAR** e abra Combate.
-7. Clique em **USAR ARMA** e depois **DANO**; confira as rolagens no DSO Chat.
+## Migração das fichas v0.4
+
+A v0.5 usa o Owlbear como fonte oficial de persistência. Na primeira abertura pelo **Mestre**, a extensão procura as fichas v0.4 salvas no `localStorage` daquele navegador e tenta migrá-las para o banco compacto da sala.
+
+- Se a migração couber no limite seguro, ela é feita automaticamente.
+- Se o banco exceder o limite, a extensão mostra um aviso e não sobrescreve silenciosamente os dados antigos.
+- Antes da atualização, é recomendado manter uma cópia do backup JSON da v0.4.
+
+## Teste rápido após o deploy
+
+1. Abra uma ficha e confirme que Núcleo + Perícias ficam visíveis ao mesmo tempo e que só existem as abas Combate, Inventário, Habilidades e Rituais.
+2. Role uma perícia: o resultado deve aparecer no pop-up da ficha e no DSO Chat.
+3. Abra Combate e faça uma rolagem pelo Arsenal de Dados.
+4. No Inventário, equipe uma arma e confirme que ela aparece em Combate.
+5. Clique em **USAR ARMA**; confira o pop-up e o registro no Chat.
+6. Abra **EDITAR** na arma, mude um campo e salve; feche/reabra a ficha para confirmar persistência.
+7. Adicione um ritual de dano como Descarnar e teste a rolagem Normal/Discente.
+8. Em um Ocultista, adicione/remova rituais e confirme `NEX base + bônus por rituais = NEX efetivo`.
+9. Feche o Owlbear, abra a mesma sala em outro navegador/computador e confirme que a ficha continua no banco da sala.

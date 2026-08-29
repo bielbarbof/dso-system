@@ -1,58 +1,78 @@
 # DSO System — Changelog
 
-## v0.4.0 — Arsenal & Archive Stabilization
+## v0.5.0 — Operational Sheet & Owlbear Persistence
 
-### Correção crítica do Arquivo DSO
-- Reconstruído o renderer de Habilidades, Inventário e Rituais.
-- O modal não injeta mais centenas de descrições completas no DOM de uma vez.
-- Resultados são renderizados em lotes de 50 com **CARREGAR MAIS**.
-- Descrições são carregadas somente quando o registro é expandido.
-- Cards possuem altura mínima real e layout flexível para impedir o bug de “linhas vazias”.
-- Busca e filtros continuam acessando o catálogo completo.
+### Baseline
+- A v0.4.0 é tratada como baseline estável.
+- Preservado o renderer paginado/expansível que corrigiu o bug crítico de Habilidades, Inventário e Rituais.
+- Preservados Patentes DSO, melhorias, maldições, automações já existentes, vínculo com token e integração com DSO Chat.
 
-### Patentes DSO
-A progressão por Pontos de Prestígio agora é automática:
-- Recruta — 0 PP — I: 2 — Crédito Baixo
-- Agente — 10 PP — I: 3 — Crédito Baixo
-- Operador — 20 PP — I: 3 / II: 1 — Crédito Médio
-- Investigador — 35 PP — I: 3 / II: 2 — Crédito Médio
-- Agente Especial — 50 PP — I: 3 / II: 2 / III: 1 — Crédito Médio
-- Oficial de Campo — 90 PP — I: 3 / II: 3 / III: 1 — Crédito Alto
-- Oficial de Operações — 140 PP — I: 3 / II: 3 / III: 2 / IV: 1 — Crédito Alto
-- Supervisor — 220 PP — I: 3 / II: 3 / III: 3 / IV: 1 — Crédito Alto
-- Comandante — 350 PP — I: 3 / II: 3 / III: 3 / IV: 2 — Crédito Ilimitado
-- Agente de Elite — 500 PP — I: 4 / II: 4 / III: 3 / IV: 3 — Crédito Ilimitado
+### Persistência oficial no Owlbear
+- Criado banco compacto `db-v1` no Room Metadata.
+- Owlbear passa a ser a fonte autoritativa das fichas.
+- `localStorage` passa a servir apenas para migração/cache auxiliar.
+- Registros do compêndio são persistidos por índice compacto + overrides, evitando duplicar descrição e dados imutáveis.
+- Overrides de item/habilidade/ritual são individuais por protagonista.
+- Proteção de tamanho: gravações acima do limite seguro de 15.000 bytes são bloqueadas com mensagem explícita.
+- Migração automática da v0.4 para o banco da sala quando o Mestre abre a v0.5 e a migração cabe no limite.
+- Exportar/Importar Backup continua disponível no painel do Mestre.
 
-### Inventário
-- Novo painel de Pontos de Prestígio, Patente, Crédito e limites I–IV.
-- Contagem automática de itens por categoria.
-- Categoria efetiva considera modificações, maldições e automações da ficha.
-- Carga atual, carga máxima e limite absoluto visíveis.
-- Sobrecarga é detectada e continua aplicando as penalidades automaticamente.
-- Proteções usam espaços oficiais: Leve 2, Pesada 5, Escudo 2.
-- Cards de item exibem Categoria e Espaços de forma legível.
+### Nova arquitetura da ficha
+- Removida a aba **GERAL**.
+- Removida a aba **PERÍCIAS**; a matriz completa passa a ficar sempre visível na coluna central.
+- Removida completamente a aba **BIOGRAFIA** e seus campos.
+- Nova composição em três zonas: Núcleo do Protagonista / Perícias / Área Operacional.
+- As únicas abas operacionais são **COMBATE · INVENTÁRIO · HABILIDADES · RITUAIS**.
+- Retrato continua ausente; o token permanece como representação visual do protagonista.
+- Defesa mostra composição base + AGI + equipamento + automações + outros.
+- Bloqueio, Esquiva, Proteção, Resistências e Proficiências ficam visíveis no núcleo.
 
-### Melhorias
-- Novo modal **MELHORIAS** com abas **MODIFICAÇÕES** e **MALDIÇÕES**.
-- Armas, proteções, acessórios e munições recebem suas modificações compatíveis.
-- Armas, proteções e acessórios recebem maldições compatíveis.
-- Modificações alteram categoria automaticamente.
-- Primeira maldição aumenta a categoria em II; as seguintes, em I.
-- Bloqueio de elementos opressores.
-- Restrições de proteção (pesada/leve e Reforçada × Discreta) são verificadas.
-- A extensão impede uma melhoria que elevaria o item acima da Categoria IV.
+### Perícias e feedback de rolagem
+- Matriz de Perícias mantém a linguagem funcional do DSO Chat.
+- Testes continuam usando atributo, treino, outros e efeitos automáticos.
+- Rolagens continuam sendo enviadas ao DSO Chat.
+- Novo pop-up local evidente mostra protagonista, título da rolagem, subtítulo, fórmula e resultado final.
+- Pop-up destaca crítico e pode oferecer **ROLAR DANO** após um ataque de arma.
 
 ### Combate
-- Marcar **USAR** em uma arma no Inventário envia a arma para a aba Combate.
-- Armas podem ser usadas tanto no Inventário quanto no Combate.
-- Botão **ATACAR / USAR ARMA** usa atributo, perícia, treino, bônus e modificações da arma.
-- Botão **DANO** usa dados, atributo de dano, modificações e maldições aplicáveis.
-- Margem e multiplicador de crítico são calculados automaticamente.
-- Acerto crítico multiplica os dados-base da arma na rolagem de dano seguinte.
-- As rolagens são enviadas ao DSO Chat pelo canal de integração já existente.
-- Novo card de arma inspirado na organização do C.R.I.S, reinterpretado em Tech Noir DSO.
+- Novo **Arsenal de Dados** com D4, D6, D8, D10, D12 e D20.
+- Quantidade, bônus e KH configuráveis; resultado vai ao Chat e ao pop-up local.
+- Cards de arma em Combate mostram somente as ações principais **USAR ARMA · EDITAR · REMOVER**.
+- Informações mecânicas essenciais permanecem legíveis e o card pode ser expandido pela própria área de identificação.
+- Ataque utiliza atributo, perícia, treino, Outros, bônus da arma e efeitos estruturados.
+- Crítico considera margem e multiplicador efetivos.
+- Dano considera dados-base, multiplicador crítico, atributo de dano, bônus, modificações, maldições e danos extras.
 
-### UI / UX
-- Escala tipográfica aumentada em Arquivo, Inventário, Combate e cards selecionados.
-- Botões e metadados maiores.
-- Barras de PV e PD dos tokens ficaram mais espessas e visíveis.
+### Editor de armas e registros
+- Editor detalhado de armamentos: nome, dano, crítico, multiplicador, bônus de ataque, perícia, atributo de ataque, atributo de dano, bônus de dano, tipo, alcance, proficiência, empunhadura, categoria, espaços e quantidade.
+- Suporte a múltiplas parcelas personalizadas de dano extra.
+- Modificações e Maldições acessíveis a partir do editor de itens compatíveis.
+- Habilidades podem ter nome, descrição, requisitos, ativação, custo e demais campos estruturados alterados por protagonista.
+- Rituais podem ter dados descritivos/mecânicos e fórmulas de dano por forma editados por protagonista.
+
+### Rituais
+- 27 rituais receberam `damageModes` estruturados quando o dano pôde ser identificado de forma clara no material do projeto.
+- Cards de rituais de dano exibem rolagens diretas para **NORMAL**, **DISCENTE** e **VERDADEIRO** quando disponíveis.
+- Rolagem de dano de ritual é enviada ao DSO Chat e recebe pop-up local.
+
+### Regras automáticas
+- **Nível de Experiência continua independente de NEX.**
+- Regra da campanha: Ocultista recebe **+1 NEX efetivo por ritual conhecido**.
+- A ficha mantém `NEX base`, `bônus de rituais` e `NEX efetivo` separadamente.
+- **Sangue de Ferro** passa a recalcular o bônus de PV a partir do NEX efetivo.
+- Origem continua aplicando automaticamente suas perícias treinadas e poder de origem.
+- Ajustes externos continuam somados aos cálculos automáticos.
+
+### UI / UX Tech Noir DSO
+- Tipografia global levemente ampliada para leitura em sessão.
+- Revisados alinhamento, baseline, padding, gaps, botões, ícones, setas, inputs e estados.
+- Cards, modais, biblioteca e editores usam hierarquia mais consistente.
+- Layout responsivo reorganiza as três zonas antes de esmagar conteúdo.
+- Tags: Conhecimento amarelo queimado; Energia roxo; Morte cinza; Sangue vermelho forte; Medo azul.
+- Barras de PV/PD dos tokens permanecem robustas e ganharam maior presença visual.
+
+### Controle do Mestre / Tokens
+- Botão de exclusão de protagonista preservado.
+- Exclusão remove o registro da sala, desvincula tokens e apaga as barras DSO associadas.
+- Menu de PV/PD passou a usar filtro de token mais robusto, validando o vínculo no clique.
+- Ícone principal permanece como documento DSO.
