@@ -1,50 +1,58 @@
 # DSO System — Changelog
 
-## v0.3.0 — Reestruturação Tech Noir
+## v0.4.0 — Arsenal & Archive Stabilization
 
-### Interface
-- revisão ampla de alinhamento, espaçamento, hierarquia e consistência visual;
-- ícone oficial alterado para um documento Tech Noir DSO;
-- retrato/foto removido da ficha e do painel de controle;
-- cards de atributos simplificados: siglas maiores, sem repetir o nome por extenso;
-- listas selecionadas agora são agrupadas por categoria;
-- biblioteca refeita para mostrar nome, metadados, resumo e descrição expansível sem depender do carregamento dos ícones.
+### Correção crítica do Arquivo DSO
+- Reconstruído o renderer de Habilidades, Inventário e Rituais.
+- O modal não injeta mais centenas de descrições completas no DOM de uma vez.
+- Resultados são renderizados em lotes de 50 com **CARREGAR MAIS**.
+- Descrições são carregadas somente quando o registro é expandido.
+- Cards possuem altura mínima real e layout flexível para impedir o bug de “linhas vazias”.
+- Busca e filtros continuam acessando o catálogo completo.
 
-### Perícias + DSO Chat
-- matriz de perícias redesenhada a partir da mesma linguagem da aba + TESTE do DSO Chat;
-- mesmo d20, colunas PERÍCIA / DADOS / BÔNUS / TREINO / OUTROS e estados 0/5/10/15;
-- mini grade AGI/FOR/INT/PRE/VIG adicionada à aba de perícias;
-- alterações continuam sendo exportadas ao DSO Chat pela skill bridge existente.
+### Patentes DSO
+A progressão por Pontos de Prestígio agora é automática:
+- Recruta — 0 PP — I: 2 — Crédito Baixo
+- Agente — 10 PP — I: 3 — Crédito Baixo
+- Operador — 20 PP — I: 3 / II: 1 — Crédito Médio
+- Investigador — 35 PP — I: 3 / II: 2 — Crédito Médio
+- Agente Especial — 50 PP — I: 3 / II: 2 / III: 1 — Crédito Médio
+- Oficial de Campo — 90 PP — I: 3 / II: 3 / III: 1 — Crédito Alto
+- Oficial de Operações — 140 PP — I: 3 / II: 3 / III: 2 / IV: 1 — Crédito Alto
+- Supervisor — 220 PP — I: 3 / II: 3 / III: 3 / IV: 1 — Crédito Alto
+- Comandante — 350 PP — I: 3 / II: 3 / III: 3 / IV: 2 — Crédito Ilimitado
+- Agente de Elite — 500 PP — I: 4 / II: 4 / III: 3 / IV: 3 — Crédito Ilimitado
 
-### Habilidades
-- biblioteca reorganizada em Poderes de Classe, Trilhas, Origens, Poderes Gerais e Poderes Paranormais;
-- Poderes Paranormais não ficam mais misturados com Trilhas;
-- 33 poderes paranormais oficiais foram adicionados ao arquivo estruturado, incluindo o livro básico e Sobrevivendo ao Horror;
-- habilidades já adicionadas à ficha são agrupadas por ORIGEM / CLASSE / TRILHA / PODERES GERAIS / PODERES PARANORMAIS.
+### Inventário
+- Novo painel de Pontos de Prestígio, Patente, Crédito e limites I–IV.
+- Contagem automática de itens por categoria.
+- Categoria efetiva considera modificações, maldições e automações da ficha.
+- Carga atual, carga máxima e limite absoluto visíveis.
+- Sobrecarga é detectada e continua aplicando as penalidades automaticamente.
+- Proteções usam espaços oficiais: Leve 2, Pesada 5, Escudo 2.
+- Cards de item exibem Categoria e Espaços de forma legível.
 
-### Origem automática
-- ao selecionar uma origem oficial do livro básico, suas perícias treinadas são aplicadas automaticamente;
-- o poder correspondente da origem é adicionado automaticamente à ficha;
-- trocar de origem remove apenas os benefícios que haviam sido aplicados automaticamente pela origem anterior;
-- Amnésico mantém as duas perícias à escolha do Mestre.
+### Melhorias
+- Novo modal **MELHORIAS** com abas **MODIFICAÇÕES** e **MALDIÇÕES**.
+- Armas, proteções, acessórios e munições recebem suas modificações compatíveis.
+- Armas, proteções e acessórios recebem maldições compatíveis.
+- Modificações alteram categoria automaticamente.
+- Primeira maldição aumenta a categoria em II; as seguintes, em I.
+- Bloqueio de elementos opressores.
+- Restrições de proteção (pesada/leve e Reforçada × Discreta) são verificadas.
+- A extensão impede uma melhoria que elevaria o item acima da Categoria IV.
 
-### Inventário e Rituais
-- biblioteca não usa mais o layout quebrado da v0.2;
-- descrições podem ser abertas integralmente;
-- inventário selecionado passa a ser agrupado em Armamentos, Proteções e Equipamentos;
-- rituais selecionados passam a ser agrupados por círculo;
-- campos de ritual oriundos do Foundry são exibidos em português (execução, alcance, alvo, duração e resistência);
-- indicadores Discente/Verdadeiro são exibidos como metadados sem duplicar textos inválidos.
+### Combate
+- Marcar **USAR** em uma arma no Inventário envia a arma para a aba Combate.
+- Armas podem ser usadas tanto no Inventário quanto no Combate.
+- Botão **ATACAR / USAR ARMA** usa atributo, perícia, treino, bônus e modificações da arma.
+- Botão **DANO** usa dados, atributo de dano, modificações e maldições aplicáveis.
+- Margem e multiplicador de crítico são calculados automaticamente.
+- Acerto crítico multiplica os dados-base da arma na rolagem de dano seguinte.
+- As rolagens são enviadas ao DSO Chat pelo canal de integração já existente.
+- Novo card de arma inspirado na organização do C.R.I.S, reinterpretado em Tech Noir DSO.
 
-### Tokens
-- barras de PV e PD ficaram mais grossas e visíveis;
-- continuam presas ao token e respondendo às alterações da ficha/painel de recursos.
-
-### Mestre
-- botão para excluir protagonista adicionado ao painel de controle;
-- ao excluir, o catálogo é atualizado e vínculos/barras daquele protagonista são limpos dos tokens.
-
-### Correções de assets
-- normalização dos nomes de arquivos vindos do Foundry (`#U00xx`);
-- correção de caminhos com maiúsculas/minúsculas e caracteres acentuados;
-- referências locais do compêndio foram validadas contra os assets disponíveis.
+### UI / UX
+- Escala tipográfica aumentada em Arquivo, Inventário, Combate e cards selecionados.
+- Botões e metadados maiores.
+- Barras de PV e PD dos tokens ficaram mais espessas e visíveis.

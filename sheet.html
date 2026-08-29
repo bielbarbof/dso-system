@@ -25,7 +25,7 @@
       <label><span>TRILHA</span><select id="trail"></select></label>
       <label><span>NÍVEL DE EXPERIÊNCIA</span><input id="level" type="number" min="1" max="20"></label>
       <label><span>NEX</span><div class="unit-input"><input id="nex" type="number" min="0" max="100"><b>%</b></div></label>
-      <label><span>PATENTE</span><input id="patent"></label>
+      <label><span>PATENTE</span><input id="patent" readonly aria-readonly="true"></label>
     </div>
   </section>
 
@@ -41,7 +41,7 @@
     <div class="section-title"><span>ATRIBUTOS</span><i></i></div><div id="attributes" class="attributes"></div>
     <div class="section-title"><span>DERIVADOS</span><i></i></div><div id="derivedGrid" class="derived-grid"></div>
     <div class="section-title"><span>AJUSTES EXTERNOS</span><i></i><em>EDITÁVEIS // SOMADOS AO CÁLCULO AUTOMÁTICO</em></div>
-    <div class="modifier-grid"><label><span>PV MÁX.</span><input id="pvBonus" type="number"></label><label><span>PD MÁX.</span><input id="pdBonus" type="number"></label><label><span>DEFESA</span><input id="defBonus" type="number"></label><label><span>DESLOC.</span><input id="movementBonus" type="number"></label><label><span>DT RITUAL</span><input id="ritualDtBonus" type="number"></label><label><span>PRESTÍGIO</span><input id="prestige" type="number"></label></div>
+    <div class="modifier-grid"><label><span>PV MÁX.</span><input id="pvBonus" type="number"></label><label><span>PD MÁX.</span><input id="pdBonus" type="number"></label><label><span>DEFESA</span><input id="defBonus" type="number"></label><label><span>DESLOC.</span><input id="movementBonus" type="number"></label><label><span>DT RITUAL</span><input id="ritualDtBonus" type="number"></label><label><span>PRESTÍGIO</span><input id="prestige" type="number" min="0" step="1"></label></div>
     <div id="originNotice" class="origin-notice hidden"></div>
   </section>
 
@@ -53,8 +53,34 @@
     </div>
   </section>
 
-  <section id="tab-combat" class="tab-panel"><div class="section-title"><span>COMBATE</span><i></i></div><div id="combatSummary" class="combat-summary"></div><div class="section-title"><span>ARMAMENTOS EQUIPADOS</span><i></i></div><div id="combatWeapons" class="selected-list"></div></section>
-  <section id="tab-inventory" class="tab-panel"><div class="library-toolbar"><div><span>ARQUIVO DSO</span><strong>INVENTÁRIO</strong></div><button data-open-library="inventory">+ ADICIONAR ITEM</button></div><div id="inventoryList" class="selected-list"></div></section>
+  <section id="tab-combat" class="tab-panel">
+    <div class="section-title"><span>COMBATE</span><i></i><em>ARMAS MARCADAS COMO USAR APARECEM AQUI</em></div>
+    <div id="combatSummary" class="combat-summary"></div>
+    <div id="combatWeapons" class="combat-weapons"></div>
+  </section>
+  <section id="tab-inventory" class="tab-panel">
+    <div class="library-toolbar"><div><span>ARQUIVO DSO</span><strong>INVENTÁRIO</strong></div><button data-open-library="inventory">+ ADICIONAR ITEM</button></div>
+    <div id="inventoryDashboard" class="inventory-dashboard">
+      <div class="inventory-admin">
+        <label><span>PONTOS DE PRESTÍGIO</span><input id="inventoryPrestige" type="number" min="0" step="1"></label>
+        <div class="inventory-admin-stat"><span>PATENTE</span><strong id="inventoryPatent">RECRUTA</strong></div>
+        <div class="inventory-admin-stat"><span>LIMITE DE CRÉDITO</span><strong id="inventoryCredit">BAIXO</strong></div>
+      </div>
+      <div class="inventory-limits">
+        <div class="inventory-limit-label"><span></span><b>I</b><b>II</b><b>III</b><b>IV</b></div>
+        <div class="inventory-limit-row"><span>LIMITE</span><strong id="limitCat1">0</strong><strong id="limitCat2">0</strong><strong id="limitCat3">0</strong><strong id="limitCat4">0</strong></div>
+        <div class="inventory-limit-row"><span>NO INVENTÁRIO</span><strong id="countCat1">0</strong><strong id="countCat2">0</strong><strong id="countCat3">0</strong><strong id="countCat4">0</strong></div>
+      </div>
+      <div class="load-panel">
+        <div class="load-head"><span>CARGA</span><strong id="loadNumbers">0 / 5</strong></div>
+        <div class="load-track"><i id="loadFill"></i><b id="loadHardMarker"></b></div>
+        <div class="load-foot"><span id="loadStatus">NORMAL</span><span id="loadHard">MÁX. ABSOLUTO 10</span></div>
+      </div>
+      <div id="patentPrivilege" class="patent-privilege hidden"></div>
+    </div>
+    <div id="inventoryNotice" class="inventory-notice hidden"></div>
+    <div id="inventoryList" class="selected-list"></div>
+  </section>
   <section id="tab-abilities" class="tab-panel"><div class="library-toolbar"><div><span>ARQUIVO DSO</span><strong>HABILIDADES</strong></div><button data-open-library="abilities">+ ADICIONAR HABILIDADE</button></div><div id="abilityList" class="selected-list"></div></section>
   <section id="tab-rituals" class="tab-panel"><div class="library-toolbar"><div><span>ARQUIVO DSO</span><strong>RITUAIS</strong></div><button data-open-library="rituals">+ ADICIONAR RITUAL</button></div><div id="ritualList" class="selected-list"></div></section>
   <section id="tab-bio" class="tab-panel"><label class="long-text"><span>BIOGRAFIA</span><textarea id="biography"></textarea></label><label class="long-text"><span>OBJETIVOS</span><textarea id="goals"></textarea></label><label class="long-text"><span>ANOTAÇÕES</span><textarea id="notes"></textarea></label></section>
@@ -64,6 +90,15 @@
       <header><div><span id="libraryEyebrow">ARQUIVO DSO</span><h2 id="libraryTitle">ADICIONAR</h2></div><button id="libraryClose" aria-label="Fechar">×</button></header>
       <div class="library-controls"><div id="libraryPrimary" class="filter-row primary"></div><div id="librarySecondary" class="filter-row secondary"></div><div class="search-box"><span>⌕</span><input id="librarySearch" placeholder="Buscar no arquivo..."></div><div id="libraryCount" class="library-count"></div></div>
       <div id="libraryResults" class="library-results"></div>
+    </div>
+  </div>
+
+  <div id="enhancementModal" class="library-modal hidden" aria-hidden="true">
+    <div class="enhancement-dialog">
+      <header><div><span>ARQUIVO DSO // ALMOXARIFADO</span><h2 id="enhancementTitle">MELHORIAS</h2></div><button id="enhancementClose" aria-label="Fechar">×</button></header>
+      <div class="enhancement-tabs"><button data-enh-tab="mods" class="active">MODIFICAÇÕES</button><button data-enh-tab="curses">MALDIÇÕES</button></div>
+      <div id="enhancementMeta" class="enhancement-meta"></div>
+      <div id="enhancementResults" class="enhancement-results"></div>
     </div>
   </div>
   <div id="locked" class="locked hidden">MODO DE CONSULTA // VOCÊ NÃO POSSUI CONTROLE DESTA FICHA</div><div id="loading" class="loading">CARREGANDO REGISTRO…</div><div id="toast" class="toast hidden"></div>

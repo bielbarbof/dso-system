@@ -1,3 +1,4 @@
+import {ITEM_CURSES,WEAPON_MODIFICATIONS,AMMO_MODIFICATIONS,PROTECTION_MODIFICATIONS,ACCESSORY_MODIFICATIONS} from "./enhancements.js";
 export const ID = "com.desordenados.dso-system";
 export const ROOM_KEY = `${ID}/catalog-v2`;
 export const LEGACY_ROOM_KEY = `${ID}/catalog-v1`;
@@ -10,6 +11,20 @@ export const BAR_KEY = `${ID}/resource-bar`;
 export const SHEET_MODAL_ID = `${ID}/sheet`;
 export const LINK_MODAL_ID = `${ID}/link`;
 export const RESOURCE_MODAL_ID = `${ID}/resources`;
+
+export const PATENTS = [
+  {name:"Recruta",pp:0,limits:[2,0,0,0],credit:"Baixo",privilege:""},
+  {name:"Agente",pp:10,limits:[3,0,0,0],credit:"Baixo",privilege:""},
+  {name:"Operador",pp:20,limits:[3,1,0,0],credit:"Médio",privilege:""},
+  {name:"Investigador",pp:35,limits:[3,2,0,0],credit:"Médio",privilege:""},
+  {name:"Agente Especial",pp:50,limits:[3,2,1,0],credit:"Médio",privilege:""},
+  {name:"Oficial de Campo",pp:90,limits:[3,3,1,0],credit:"Alto",privilege:"Prioridade no Almoxarifado para recursos limitados destinados a operações autorizadas."},
+  {name:"Oficial de Operações",pp:140,limits:[3,3,2,1],credit:"Alto",privilege:"Acesso a arquivos restritos relacionados às suas operações."},
+  {name:"Supervisor",pp:220,limits:[3,3,3,1],credit:"Alto",privilege:"Pode autorizar Requisições Especiais dentro de sua área de responsabilidade."},
+  {name:"Comandante",pp:350,limits:[3,3,3,2],credit:"Ilimitado",privilege:"Pode mobilizar agentes, veículos e recursos especiais da DSO quando possuir autoridade sobre a operação."},
+  {name:"Agente de Elite",pp:500,limits:[4,4,3,3],credit:"Ilimitado",privilege:"Maior nível regular de acesso ao Almoxarifado."},
+];
+export function patentForPrestige(pp){pp=Number(pp)||0;let out=PATENTS[0];for(const p of PATENTS)if(pp>=p.pp)out=p;return {...out,limits:[...out.limits]};}
 
 export const ATTRIBUTES = {
   dex: { label: "Agilidade", abv: "AGI" },
@@ -82,9 +97,9 @@ export function defaultSkills(){
 export function makeCharacter(){
   const now=Date.now();
   return {
-    schema:2,id:uid(),type:"protagonist",name:"Novo Protagonista",portrait:"",controllers:[],createdAt:now,updatedAt:now,
+    schema:4,id:uid(),type:"protagonist",name:"Novo Protagonista",portrait:"",controllers:[],createdAt:now,updatedAt:now,
     system:{
-      class:"",origin:"",originState:{appliedOrigin:""},trilha:"",NEX:{value:0},nivel:{value:1},stage:{value:1},patent:{name:"Recruta",prestigePoints:0},
+      class:"",origin:"",originState:{appliedOrigin:""},trilha:"",NEX:{value:0},nivel:{value:1},stage:{value:1},patent:{name:"Recruta",prestigePoints:0,itemLimits:[2,0,0,0],creditLimit:"Baixo"},
       PV:{value:0,max:0,manualMax:0},PD:{value:0,max:0,manualMax:0,perRound:1},
       defense:{value:10,dodge:10,manual:0,equipment:0},desloc:{base:9,manual:0,value:9},ritual:{DT:10,manualDT:0},
       attributes:{dex:{value:1},str:{value:1},int:{value:1},pre:{value:1},vit:{value:1}},skills:defaultSkills(),
@@ -101,8 +116,10 @@ function normalizeAddedItem(x,kind){
     description:String(x.description||"").slice(0,40000), group:String(x.group||""), path:String(x.path||""), type:String(x.type||""), autoSource:String(x.autoSource||""),
     activation:String(x.activation||""), cost:String(x.cost||""), costType:String(x.costType||""), preRequisite:String(x.preRequisite||""),
     circle:clamp(x.circle??0,0,9),element:String(x.element||""),execution:String(x.execution||""),range:String(x.range||""),target:String(x.target||""),duration:String(x.duration||""),resistance:String(x.resistance||""),studentForm:String(x.studentForm||""),trueForm:String(x.trueForm||""),
-    category:String(x.category||""),weight:Number(x.weight)||0,quantity:Math.max(0,Number(x.quantity)||1),equipped:Boolean(x.equipped),defense:Number(x.defense)||0,
-    critical:String(x.critical||""),proficiency:String(x.proficiency||""),attack:x.attack&&typeof x.attack==="object"?x.attack:null,damage:x.damage&&typeof x.damage==="object"?x.damage:null,
+    category:String(x.category??""),weight:Number(x.weight)||0,quantity:Math.max(0,Number(x.quantity)||1),equipped:Boolean(x.equipped),defense:Number(x.defense)||0,
+    critical:String(x.critical||""),proficiency:String(x.proficiency||""),attack:x.attack&&typeof x.attack==="object"?{...x.attack}:null,damage:x.damage&&typeof x.damage==="object"?{...x.damage}:null,
+    folderPath:Array.isArray(x.folderPath)?x.folderPath.map(String).slice(0,8):[],categoryPath:String(x.categoryPath||""),rangeType:String(x.rangeType||""),gripType:String(x.gripType||""),ammunitionType:String(x.ammunitionType||""),range:String(x.range||""),
+    modifications:Array.isArray(x.modifications)?x.modifications.filter(Boolean).map(String).slice(0,24):[],curses:Array.isArray(x.curses)?x.curses.filter(Boolean).map(String).slice(0,24):[],
   };
 }
 
@@ -113,7 +130,7 @@ export function normalizeCharacter(raw){
   const s=raw.system||{}, o=c.system;
   o.class=CLASSES[s.class]?s.class:""; o.origin=String(s.origin||"").slice(0,120); o.originState={appliedOrigin:String(s.originState?.appliedOrigin||"").slice(0,120)}; o.trilha=String(s.trilha||"").slice(0,120);
   o.NEX.value=clamp(s.NEX?.value??0,0,100); o.nivel.value=clamp(s.nivel?.value??1,1,20); o.stage.value=clamp(s.stage?.value??1,1,5);
-  o.patent.name=String(s.patent?.name||"Recruta").slice(0,80); o.patent.prestigePoints=clamp(s.patent?.prestigePoints??0,-9999,99999);
+  o.patent.prestigePoints=clamp(s.patent?.prestigePoints??0,0,99999); const pat=patentForPrestige(o.patent.prestigePoints); o.patent.name=pat.name; o.patent.itemLimits=pat.limits; o.patent.creditLimit=pat.credit;
   for(const k of Object.keys(ATTRIBUTES)) o.attributes[k].value=clamp(s.attributes?.[k]?.value??1,0,10);
   // v0.1 migration: old .bonus becomes the explicit editable maximum modifier.
   o.PV.manualMax=clamp(s.PV?.manualMax??s.PV?.bonus??0,-999,9999); o.PD.manualMax=clamp(s.PD?.manualMax??s.PD?.bonus??0,-999,9999);
@@ -137,22 +154,41 @@ export function progressionValue(c){
   return Number(c.system.nivel.value)||1;
 }
 
+const MOD_EFFECTS=Object.fromEntries([...WEAPON_MODIFICATIONS,...AMMO_MODIFICATIONS,...PROTECTION_MODIFICATIONS,...ACCESSORY_MODIFICATIONS].map(m=>[m.id,m.effects||{}]));
+const CURSE_BY_ID=Object.fromEntries(ITEM_CURSES.map(c=>[c.id,c]));
+export function itemDerived(item){
+  let baseWeight=Math.max(0,Number(item?.weight)||0);if(item?.type==='protection'){if(/Proteção Leve/i.test(item?.name||''))baseWeight=2;else if(/Proteção Pesada/i.test(item?.name||''))baseWeight=5;else if(/Escudo/i.test(item?.name||''))baseWeight=2;}const out={category:Math.max(0,Number(item?.category)||0),weight:baseWeight,defense:Number(item?.defense)||0,attackBonus:0,damageFlat:0,extraBaseDie:0,extraDamage:[],threatDelta:0,critMultiplierDelta:0,rangeSteps:0,automatic:false,rd:0,defenseBonus:0,movementBonus:0,ritualDtBonus:0,pvBonus:0,pdBonus:0,attributeBonus:{dex:0,str:0,int:0,pre:0,vit:0}};
+  const mods=Array.isArray(item?.modifications)?item.modifications:[];
+  out.category+=mods.length;
+  for(const id of mods){const e=MOD_EFFECTS[id]||{};for(const k of ['weightDelta','attackBonus','damageFlat','extraBaseDie','threatDelta','critMultiplierDelta','rangeSteps','defenseBonus','movementBonus','ritualDtBonus','pvBonus','pdBonus'])if(e[k])out[k]=(out[k]||0)+e[k];if(e.automatic)out.automatic=true;if(e.rd)out.rd=Math.max(out.rd,e.rd);if(e.extraDamage)out.extraDamage.push(e.extraDamage);}
+  const curses=Array.isArray(item?.curses)?item.curses:[]; if(curses.length)out.category+=2+Math.max(0,curses.length-1);
+  for(const id of curses){const e=CURSE_BY_ID[id]?.effects||{};for(const k of ['weightDelta','attackBonus','damageFlat','extraBaseDie','threatDelta','critMultiplierDelta','rangeSteps','defenseBonus','movementBonus','ritualDtBonus','pvBonus','pdBonus'])if(e[k])out[k]=(out[k]||0)+e[k];if(e.doubleThreat)out.doubleThreat=true;if(e.extraDamage)out.extraDamage.push(e.extraDamage);if(e.attributeBonus)for(const [a,n] of Object.entries(e.attributeBonus))out.attributeBonus[a]=(out.attributeBonus[a]||0)+(Number(n)||0);}
+  out.weight=Math.max(0,out.weight+(out.weightDelta||0)); out.defense+=out.defenseBonus||0; return out;
+}
+export function effectiveItemCategory(item,c=null){let cat=itemDerived(item).category;if(c&&item?.type==='generalEquipment'&&hasAbility(c,'NEX 40% - Remendão'))cat-=1;return Math.max(0,cat);}
+export function inventoryState(c){
+  const s=c.system,pat=patentForPrestige(s.patent?.prestigePoints||0),counts=[0,0,0,0],FOR=Number(s.attributes.str.value)||0,INT=Number(s.attributes.int.value)||0,names=abilityNameSet(c),capacityBase=names.has('NEX 10% - Inventário Otimizado')?FOR+INT:FOR,max=capacityBase===0?2:capacityBase*5;let used=0;
+  for(const item of s.inventory||[]){const q=Math.max(0,Number(item.quantity)||0),d=itemDerived(item),cat=effectiveItemCategory(item,c);used+=d.weight*q;if(cat>=1&&cat<=4)counts[cat-1]+=q;}
+  return {patent:pat,counts,limits:pat.limits,credit:pat.credit,used:Math.round(used*100)/100,max,hardMax:max*2,overloaded:used>max,invalid:used>max*2};
+}
 function equippedDefense(inventory){
-  const equipped=(inventory||[]).filter(i=>i.type==="protection"&&i.equipped);
-  let shield=0, armor=0;
-  for(const item of equipped){ const v=Number(item.defense)||0; if(/escudo/i.test(item.name))shield+=v; else armor=Math.max(armor,v); }
-  return armor+shield;
+  const equipped=(inventory||[]).filter(i=>i.type==="protection"&&i.equipped); let shield=0,armor=0;
+  for(const item of equipped){const v=itemDerived(item).defense;if(/escudo/i.test(item.name))shield+=v;else armor=Math.max(armor,v);}return armor+shield;
 }
 
 export function deriveCharacter(c,{refill=false,previousMax=null}={}){
-  const s=c.system, level=progressionValue(c), adjust=Math.max(0,level-1), VIG=Number(s.attributes.vit.value)||0, PRE=Number(s.attributes.pre.value)||0, INT=Number(s.attributes.int.value)||0,names=abilityNameSet(c);
+  const s=c.system,level=progressionValue(c),adjust=Math.max(0,level-1),names=abilityNameSet(c);
+  const pat=patentForPrestige(s.patent?.prestigePoints||0);s.patent.name=pat.name;s.patent.itemLimits=pat.limits;s.patent.creditLimit=pat.credit;
+  const itemAuto={PV:0,PD:0,defense:0,movement:0,ritualDT:0,attrs:{dex:0,str:0,int:0,pre:0,vit:0}};
+  for(const item of s.inventory||[]){if(!item.equipped)continue;const d=itemDerived(item);itemAuto.PV+=d.pvBonus||0;itemAuto.PD+=d.pdBonus||0;itemAuto.defense+=item.type==='protection'?0:(d.defenseBonus||0);itemAuto.movement+=d.movementBonus||0;itemAuto.ritualDT+=d.ritualDtBonus||0;for(const a of Object.keys(itemAuto.attrs))itemAuto.attrs[a]+=d.attributeBonus?.[a]||0;}
+  const VIG=(Number(s.attributes.vit.value)||0)+itemAuto.attrs.vit,PRE=(Number(s.attributes.pre.value)||0)+itemAuto.attrs.pre,INT=(Number(s.attributes.int.value)||0)+itemAuto.attrs.int;
   const determinationAttribute=names.has("Racionalidade Inflexível")?INT:PRE;
   let basePV=8+VIG+adjust*2, basePD=4+determinationAttribute+adjust*2;
   if(s.class==="fighter"){basePV=20+VIG+adjust*(4+VIG);basePD=6+determinationAttribute+adjust*(3+determinationAttribute);}
   if(s.class==="specialist"){basePV=16+VIG+adjust*(3+VIG);basePD=8+determinationAttribute+adjust*(4+determinationAttribute);}
   if(s.class==="occultist"){basePV=12+VIG+adjust*(2+VIG);basePD=10+determinationAttribute+adjust*(5+determinationAttribute);}
   if(s.class==="survivor"){basePV=8+VIG+adjust*2;basePD=4+determinationAttribute+adjust*2;}
-  let autoPV=0,autoPD=0,autoDefense=0,autoMovement=0,autoPerRound=0;
+  let autoPV=itemAuto.PV,autoPD=itemAuto.PD,autoDefense=itemAuto.defense,autoMovement=itemAuto.movement,autoPerRound=0;
   if(names.has("Calejado"))autoPV+=level;
   if(names.has("Vitalidade Reforçada"))autoPV+=level;
   if(names.has("NEX 10% - Casca Grossa"))autoPV+=level;
@@ -173,10 +209,10 @@ export function deriveCharacter(c,{refill=false,previousMax=null}={}){
   if(refill||wasFullPV)s.PV.value=s.PV.max; else s.PV.value=clamp(s.PV.value,0,s.PV.max);
   if(refill||wasFullPD)s.PD.value=s.PD.max; else s.PD.value=clamp(s.PD.value,0,s.PD.max);
   s.PD.perRound=(s.class==="survivor"?1:Math.max(1,level))+autoPerRound;
-  const agi=Number(s.attributes.dex.value)||0, ref=effectiveSkill(c,"reflexes");
+  const agi=(Number(s.attributes.dex.value)||0)+itemAuto.attrs.dex, ref=effectiveSkill(c,"reflexes");
   s.defense.equipment=equippedDefense(s.inventory); s.defense.value=10+agi+s.defense.equipment+autoDefense+(Number(s.defense.manual)||0); s.defense.dodge=s.defense.value+(Number(ref.training)||0)+(Number(ref.mod)||0);
   s.desloc.value=Math.max(0,(Number(s.desloc.base)||9)+autoMovement+(Number(s.desloc.manual)||0));
-  s.ritual.DT=10+s.PD.perRound+PRE+(Number(s.ritual.manualDT)||0);
+  s.ritual.DT=10+s.PD.perRound+PRE+itemAuto.ritualDT+(Number(s.ritual.manualDT)||0); const inv=inventoryState(c); s.spaces={value:inv.used,max:inv.max,hardMax:inv.hardMax,overloaded:inv.overloaded,invalid:inv.invalid}; if(inv.overloaded){s.defense.value-=5;s.defense.dodge-=5;s.desloc.value=Math.max(0,s.desloc.value-3);} c.schema=4;
   return c;
 }
 
@@ -204,6 +240,8 @@ export function profileFromCharacter(c){
   return {schema:1,protagonistId:c.id,protagonistName:c.name,attributes:attrs,skills,updatedAt:c.updatedAt};
 }
 
+export function effectiveAttribute(c,key){let n=Number(c?.system?.attributes?.[key]?.value)||0;for(const item of c?.system?.inventory||[]){if(item.equipped)n+=itemDerived(item).attributeBonus?.[key]||0;}return n;}
+
 export function randomInt(max){const a=new Uint32Array(1);if(globalThis.crypto?.getRandomValues){const range=0x100000000,limit=range-(range%max);do{crypto.getRandomValues(a)}while(a[0]>=limit);return(a[0]%max)+1;}return Math.floor(Math.random()*max)+1;}
-export function rollSkill(c,skillKey){const skill=effectiveSkill(c,skillKey);if(!c.system.skills[skillKey])throw new Error("Perícia inexistente");const attr=skill.attr,score=Number(c.system.attributes[attr]?.value)||0,bonus=(Number(skill.training)||0)+(Number(skill.mod)||0),count=score<=0?2:score,rolls=Array.from({length:count},()=>randomInt(20)),kept=score<=0?Math.min(...rolls):Math.max(...rolls);return{skill,attr,score,bonus,rolls,kept,total:kept+bonus,formula:`${count}d20${score<=0?"kl":"kh"}${bonus?bonus>0?` + ${bonus}`:` - ${Math.abs(bonus)}`:""}`};}
+export function rollSkill(c,skillKey){const skill=effectiveSkill(c,skillKey);if(!c.system.skills[skillKey])throw new Error("Perícia inexistente");const attr=skill.attr,score=effectiveAttribute(c,attr),bonus=(Number(skill.training)||0)+(Number(skill.mod)||0),count=score<=0?2:score,rolls=Array.from({length:count},()=>randomInt(20)),kept=score<=0?Math.min(...rolls):Math.max(...rolls);return{skill,attr,score,bonus,rolls,kept,total:kept+bonus,formula:`${count}d20${score<=0?"kl":"kh"}${bonus?bonus>0?` + ${bonus}`:` - ${Math.abs(bonus)}`:""}`};}
 export function makeChatEntry(c,skillKey,roll,author){const skillName=skillKey==="freeSkill"?(c.system.skills.freeSkill.name||"Profissão"):roll.skill.label;return{kind:"roll",id:uid(),authorId:author.id,authorName:c.name||author.name||"Protagonista",authorColor:author.color||"#b51d26",createdAt:Date.now(),title:`Teste de ${skillName} com ${attrLabel(roll.attr)}`,subtitle:roll.score<=0?"Atributo 0 — mantém o menor d20":"Mantém o maior d20",formula:roll.formula,total:roll.total,modifier:roll.bonus,natural:roll.kept,terms:[{count:roll.rolls.length,sides:20,rolls:roll.rolls,subtotal:roll.kept,keep:roll.score<=0?"lowest":"highest",kept:roll.kept}]};}
